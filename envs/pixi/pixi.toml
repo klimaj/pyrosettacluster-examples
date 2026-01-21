@@ -6,6 +6,7 @@ channels = [
     "conda-forge",
 ]
 name = "pyrosettacluster-pixi-project"
+platforms = ["linux-64"]
 version = "1.0.0"
 
 [dependencies]
