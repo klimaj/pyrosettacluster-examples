@@ -1,5 +1,5 @@
 [project]
-name = "PyRosettaCluster uv Project"
+name = "pyrosettacluster-uv-project"
 version = "1.0.0"
 description = "uv project for PyRosettaCluster Example #1"
 requires-python = "==3.14"
