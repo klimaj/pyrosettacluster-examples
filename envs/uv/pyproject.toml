@@ -1,8 +1,5 @@
 [project]
-name = "pyrosettacluster-uv-project"
-version = "1.0.0"
-description = "uv project for PyRosettaCluster Example #1"
-requires-python = "==3.14"
+authors = [{name = "Jason C. Klima"}]
 dependencies = [
     "attrs>=19.3.0",
     "billiard>=3.6.3.0",
@@ -22,6 +19,11 @@ dependencies = [
     "scipy>=1.4.1",
     "traitlets>=4.3.3",
 ]
+description = "uv project for PyRosettaCluster Example #1"
+maintainers = [{name = "Jason C. Klima"}]
+name = "pyrosettacluster-uv-project"
+requires-python = "==3.14.*"
+version = "1.0.0"
 
 [tool.uv]
 find-links = [

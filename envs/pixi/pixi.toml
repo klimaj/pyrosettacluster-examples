@@ -1,4 +1,5 @@
 [workspace]
+authors = ["Jason C. Klima"]
 channels = [
     "https://conda.rosettacommons.org",
     "https://conda.graylab.jhu.edu",
@@ -8,7 +9,7 @@ name = "pyrosettacluster-pixi-project"
 version = "1.0.0"
 
 [dependencies]
-python = "==3.14"
+python = "==3.14.*"
 pyrosetta = ">=2026.3"
 
 [pypi-dependencies]
