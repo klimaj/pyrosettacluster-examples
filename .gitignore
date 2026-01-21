@@ -1,3 +1,6 @@
+# Environment metadata
+envs/pixi/pixi.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
