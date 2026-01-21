@@ -9,7 +9,7 @@ name = "pyrosettacluster-pixi-project"
 version = "1.0.0"
 
 [dependencies]
-python = "==3.14.*"
+python = "3.14.*"
 pyrosetta = ">=2026.3"
 
 [pypi-dependencies]
