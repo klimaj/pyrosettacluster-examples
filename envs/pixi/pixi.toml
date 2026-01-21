@@ -11,7 +11,7 @@ version = "1.0.0"
 
 [dependencies]
 python = "3.14.*"
-pyrosetta = ">=2026.03,<2027"
+pyrosetta = "2026.03"
 
 [pypi-dependencies]
 pyrosetta-distributed = ">=0.0.4"
