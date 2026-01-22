@@ -19,7 +19,7 @@ dependencies = [
     "scipy>=1.4.1",
     "traitlets>=4.3.3",
 ]
-description = "uv project for PyRosettaCluster Example #1"
+description = "uv project for PyRosettaCluster"
 maintainers = [{name = "Jason C. Klima"}]
 name = "pyrosettacluster-uv-project"
 requires-python = "==3.14.*"
