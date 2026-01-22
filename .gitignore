@@ -1,5 +1,6 @@
 # Environment metadata
 envs/pixi/pixi.lock
+envs/uv/uv.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
