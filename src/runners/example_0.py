@@ -43,8 +43,6 @@ def main(
     num_protocols: int = 3,
 ) -> None:
     """Run the PyRosettaCluster example #0 simulation."""
-    print("Environment:", os.environ)
-
     # Initialize PyRosetta
     pyrosetta.init("-run:constant_seed 1")
 
