@@ -39,10 +39,10 @@ def get_input_packed_pose() -> PackedPose:
 
 def main(
     output_path: str,
-    num_tasks: int = 6,
+    num_tasks: int = 5,
     num_protocols: int = 3,
 ) -> None:
-    """Run the PyRosettaCluster example #1 simulation."""
+    """Run the PyRosettaCluster example #0 simulation."""
     print("Environment:", os.environ)
 
     # Initialize PyRosetta
@@ -67,8 +67,7 @@ def main(
             client=client,
             output_path=output_path,
             project_name="pyrosettacluster-examples",
-            simulation_name="example-1",
-            simulation_records_in_scorefile=True,
+            simulation_name="example-0",
         ).distribute(
             protocols=[test_protocol] * num_protocols,
             clients_indices=None,
@@ -79,7 +78,7 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="PyRosettaCluster usage example #1.",
+        description="PyRosettaCluster usage example #0.",
     )
     parser.add_argument(
         "--output_path",
