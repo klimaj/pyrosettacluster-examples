@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from matplotlib.colors import TwoSlopeNorm
+from matplotlib.ticker import MultipleLocator
 from pathlib import Path
 
 
@@ -69,6 +70,8 @@ def main(
         y_min = np.floor(df[y].min()) - 1
         y_max = np.ceil(df[y].max()) + 1
         ax.set_ylim(y_min, y_max)
+    ax.xaxis.set_major_locator(MultipleLocator(1))
+    ax.yaxis.set_major_locator(MultipleLocator(3))
     label_fontsize = 12
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
     ax.set_ylabel(r"Total Score ($\mathtt{beta\_jan25}$)", fontsize=label_fontsize)
