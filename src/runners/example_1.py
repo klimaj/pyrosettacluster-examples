@@ -133,7 +133,7 @@ def main(
     with LocalCluster(
         n_workers=n_workers,
         threads_per_worker=1,
-        memory_limit="4GB",
+        memory_limit="7GB",
         scheduler_port=8786,
         dashboard_address=":8787",
         resources={"CPU": 1},
