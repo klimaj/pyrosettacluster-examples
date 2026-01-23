@@ -3,6 +3,7 @@ __author__ = "Jason C. Klima"
 
 import argparse
 import json
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -10,6 +11,8 @@ import pandas as pd
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.ticker import MultipleLocator
 from pathlib import Path
+
+from src.plotting.config import rc_params
 
 
 def main(
@@ -40,6 +43,7 @@ def main(
     )
 
     # Plot
+    mpl.rcParams.update(rc_params)
     dpi = 600
     fig, ax = plt.subplots(figsize=(5, 4), dpi=dpi)
     cbar_magnitude = 9
@@ -70,13 +74,21 @@ def main(
         y_min = np.floor(df[y].min()) - 1
         y_max = np.ceil(df[y].max()) + 1
         ax.set_ylim(y_min, y_max)
-    ax.xaxis.set_major_locator(MultipleLocator(1))
-    ax.yaxis.set_major_locator(MultipleLocator(3))
+    # Adjust axes labels
     label_fontsize = 12
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
     ax.set_ylabel(r"Total Score ($\mathtt{beta\_jan25}$)", fontsize=label_fontsize)
     cbar = ax.collections[0].colorbar
     cbar.set_label(f"Seed ($\\times 10^{cbar_magnitude}$)", fontsize=label_fontsize)
+    # Adjust axes tick marks
+    tick_fontsize = 10
+    ax.tick_params(axis="x", labelsize=tick_fontsize)
+    ax.tick_params(axis="y", labelsize=tick_fontsize)
+    cbar.ax.tick_params(labelsize=tick_fontsize)
+    ax.xaxis.set_major_locator(MultipleLocator(1))
+    ax.yaxis.set_major_locator(MultipleLocator(3))
+    cbar.ax.yaxis.set_major_locator(MultipleLocator(0.5))
+    # Save
     fig.tight_layout()
     fig.savefig(
         Path(output_path) / "rmsd_total_score_seed_scatter_plot.png",
