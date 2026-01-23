@@ -5,6 +5,8 @@ from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
 from typing import Any, Dict, Tuple
 
+from src.utils import timeit
+
 
 def test_protocol(
     packed_pose: PackedPose, **kwargs: Any
@@ -42,6 +44,7 @@ def test_protocol(
     return packed_pose, kwargs
 
 
+@timeit
 @requires_packed_pose
 def blueprintbdr(
     packed_pose: PackedPose, **kwargs: Any
