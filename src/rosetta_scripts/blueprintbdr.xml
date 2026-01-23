@@ -5,7 +5,7 @@
     This protocol sets up secondary structure energies, runs BluePrintBDR with a provided blueprint file, and then runs FastDesign with a provided resfile.
 
 <SCOREFXNS>
-    <ScoreFunction name="sfxn_std" weights="ref2015"/>
+    <ScoreFunction name="sfxn_std" weights="beta_jan25"/>
     <ScoreFunction name="sfxn1" weights="fldsgn_cen">
         <Reweight scoretype="hbond_sr_bb" weight="1.0" />
         <Reweight scoretype="hbond_lr_bb" weight="1.0" />
@@ -45,12 +45,41 @@
 </TASKOPERATIONS>
 
 <SIMPLE_METRICS>
-    <RMSDMetric name="rmsd"
-        custom_type="rmsd_native"
+    <RMSDMetric name="rmsd_all"
         robust="1"
         super="1"
         reference_name="store_native"
         rmsd_type="rmsd_all"/>
+    <RMSDMetric name="rmsd_all_heavy"
+        robust="1"
+        super="1"
+        reference_name="store_native"
+        rmsd_type="rmsd_all_heavy"/>
+    <RMSDMetric name="rmsd_protein_bb_ca"
+        robust="1"
+        super="1"
+        reference_name="store_native"
+        rmsd_type="rmsd_protein_bb_ca"/>
+    <RMSDMetric name="rmsd_protein_bb_heavy"
+        robust="1"
+        super="1"
+        reference_name="store_native"
+        rmsd_type="rmsd_protein_bb_heavy"/>
+    <RMSDMetric name="rmsd_protein_bb_heavy_including_O"
+        robust="1"
+        super="1"
+        reference_name="store_native"
+        rmsd_type="rmsd_protein_bb_heavy_including_O"/>
+    <RMSDMetric name="rmsd_sc"
+        robust="1"
+        super="1"
+        reference_name="store_native"
+        rmsd_type="rmsd_sc"/>
+    <RMSDMetric name="rmsd_sc_heavy"
+        robust="1"
+        super="1"
+        reference_name="store_native"
+        rmsd_type="rmsd_sc_heavy"/>
 </SIMPLE_METRICS>
 
 <MOVERS>
@@ -72,7 +101,7 @@
         repeats="1"
         ramp_down_constraints="1"/>
     <RunSimpleMetrics name="run_simple_metrics"
-        metrics="rmsd"
+        metrics="rmsd_all,rmsd_all_heavy,rmsd_protein_bb_ca,rmsd_protein_bb_heavy,rmsd_protein_bb_heavy_including_O,rmsd_sc,rmsd_sc_heavy"
         override="0"/>
 </MOVERS>
 
