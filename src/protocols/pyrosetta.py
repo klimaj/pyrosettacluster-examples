@@ -1,6 +1,7 @@
 __author__ = "Jason C. Klima"
 
 
+from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
 from typing import Any, Dict, Tuple
 
@@ -41,6 +42,7 @@ def test_protocol(
     return packed_pose, kwargs
 
 
+@requires_packed_pose
 def blueprintbdr(
     packed_pose: PackedPose, **kwargs: Any
 ) -> Tuple[PackedPose, Dict[str, Any]]:
@@ -48,7 +50,7 @@ def blueprintbdr(
     A PyRosettaCluster protocol.
 
     Args:
-        packed_pose: An optional input `PackedPose` object.
+        packed_pose: A required input `PackedPose` object.
 
     Keyword Arguments:
         xml_str: A required `str` object representing a RosettaScripts XML file string.
@@ -87,12 +89,10 @@ def blueprintbdr(
 
     # Run RosettaScripts
     try:
-        packed_pose = rosetta_scripts.SingleoutputRosettaScriptsTask(kwargs["xml_str"])(packed_pose)
+        src_pose = rosetta_scripts.SingleoutputRosettaScriptsTask(kwargs["xml_str"])(packed_pose).pose
     except Exception as ex:
         logging.error(f"{type(ex).__name__}: Failed to run `SingleoutputRosettaScriptsTask`. {ex}")
         return None
-
-    src_pose = packed_pose.pose
 
     # Superimpose result onto reference
     superimpose_mover = pyrosetta.rosetta.protocols.simple_moves.SuperimposeMover()
@@ -108,5 +108,7 @@ def blueprintbdr(
         bb_rmsd_including_O=bb_rmsd_including_O(ref_pose, src_pose),
         CA_rmsd=CA_rmsd(ref_pose, src_pose),
     )
+    # Cache seed
+    src_pose.cache["seed"] = float(seed)
 
     return io.to_packed(src_pose)
