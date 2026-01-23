@@ -68,12 +68,10 @@ def main(
     )
     if set_xlim:
         x_min = max(np.floor(df[x].min()) - 1, 0)
-        x_max = np.ceil(df[x].max()) + 1
-        ax.set_xlim(x_min, x_max)
+        ax.set_xlim(left=x_min)
     if set_ylim:
         y_min = np.floor(df[y].min()) - 1
-        y_max = np.ceil(df[y].max()) + 1
-        ax.set_ylim(y_min, y_max)
+        ax.set_ylim(bottom=y_min)
     # Adjust axes labels
     label_fontsize = 12
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
