@@ -15,6 +15,12 @@
     </ScoreFunction>
 </SCOREFXNS>
 
+
+  <RESIDUE_SELECTORS>
+    <True name="true_selector"/>
+    <Chain name="chA" chains="A"/>
+  </RESIDUE_SELECTORS>
+
 <RESIDUE_LEVEL_TASK_OPERATIONS>
     <ExtraRotamersGenericRLT name="ex_rlt"
         ex1="0" ex2="0" ex3="0" ex4="0"
@@ -34,7 +40,9 @@
 <TASKOPERATIONS>
     <LimitAromaChi2 name="limitchi2" include_trp="1"/>
     <ReadResfile name="resfile" filename="{resfile}"/>
-    <OperateOnResidueSubset name="ex" residue_level_operations="ex_rlt"/>
+    <OperateOnResidueSubset name="ex"
+        selector="true_selector"
+        residue_level_operations="ex_rlt"/>
 </TASKOPERATIONS>
 
 <MOVERS>
