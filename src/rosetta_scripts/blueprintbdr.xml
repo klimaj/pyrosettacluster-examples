@@ -15,11 +15,10 @@
     </ScoreFunction>
 </SCOREFXNS>
 
-
-  <RESIDUE_SELECTORS>
+<RESIDUE_SELECTORS>
     <True name="true_selector"/>
     <Chain name="chA" chains="A"/>
-  </RESIDUE_SELECTORS>
+</RESIDUE_SELECTORS>
 
 <RESIDUE_LEVEL_TASK_OPERATIONS>
     <ExtraRotamersGenericRLT name="ex_rlt"
@@ -45,6 +44,15 @@
         residue_level_operations="ex_rlt"/>
 </TASKOPERATIONS>
 
+<SIMPLE_METRICS>
+    <RMSDMetric name="rmsd"
+        custom_type="rmsd_native"
+        robust="1"
+        use_native="1"
+        super="1"
+        rmsd_type="rmsd_all"/>
+</SIMPLE_METRICS>
+
 <MOVERS>
     <Dssp name="dssp"/>
     <SetSecStructEnergies name="set_ssene1"
@@ -65,15 +73,6 @@
         metrics="rmsd"
         override="0"/>
 </MOVERS>
-
-<SIMPLE_METRICS>
-  <RMSDMetric name="rmsd"
-      custom_type="rmsd_native"
-      robust="1"
-      use_native="1"
-      super="1"
-      rmsd_type="rmsd_all"/>
-</SIMPLE_METRICS>
 
 <FILTERS>
     <ResidueCount name="nres" confidence="0"/>
