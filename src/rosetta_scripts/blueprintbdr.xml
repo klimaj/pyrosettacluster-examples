@@ -48,12 +48,13 @@
     <RMSDMetric name="rmsd"
         custom_type="rmsd_native"
         robust="1"
-        use_native="1"
         super="1"
+        reference_name="store_native"
         rmsd_type="rmsd_all"/>
 </SIMPLE_METRICS>
 
 <MOVERS>
+    <SavePoseMover name="save_native" restore_pose="0" reference_name="store_native"/>
     <Dssp name="dssp"/>
     <SetSecStructEnergies name="set_ssene1"
         scorefxn="sfxn1"
@@ -84,6 +85,7 @@
 </FILTERS>
 
 <PROTOCOLS>
+    <Add mover="save_native"/>
     <Add mover="set_ssene1" />
     <Add mover="bdr"/>
     <Add mover="add_csts"/>

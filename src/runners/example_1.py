@@ -97,7 +97,9 @@ def create_tasks(xml_str: str, num_tasks: int) -> Generator[Dict[str, Any], None
     """
     for task_id in range(num_tasks):
         yield {
-            "extra_options": {"multithreading:total_threads": "1"},
+            "extra_options": {
+                "multithreading:total_threads": "1",
+            },
             "set_logging_handler": "logging",
             "xml_str": xml_str,
             "task_id": task_id,
