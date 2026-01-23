@@ -67,7 +67,7 @@ def main(
         s=s,
         cmap="RdYlBu",
         norm=norm,
-        edgecolor=None,
+        edgecolor="k",
         ax=ax,
     )
     if set_xlim:
@@ -115,7 +115,7 @@ def main(
             marker="o",
             color="w",
             markerfacecolor=idx_min_color,
-            markeredgecolor='k',
+            markeredgecolor="k",
             markeredgewidth=1,
             markersize=markersize_large,
             label="Decoy-1",
@@ -136,7 +136,9 @@ def main(
             [0], [0],
             marker="o",
             color="w",
-            markerfacecolor='lightgrey',
+            markerfacecolor="lightgray",
+            markeredgecolor="k",
+            markeredgewidth=1,
             markersize=markersize_small,
             label="Decoys",
         ),
