@@ -65,9 +65,9 @@ def main(
         y=y,
         c=df[c] / cbar_scale,
         s=s,
-        cmap="RdBu",
+        cmap="RdYlBu",
         norm=norm,
-        edgecolor="k",
+        edgecolor=None,
         ax=ax,
     )
     if set_xlim:
