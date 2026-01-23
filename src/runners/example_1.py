@@ -34,9 +34,10 @@ def write_resfile(packed_pose: PackedPose, output_path: str) -> Path:
     seq = packed_pose.pose.sequence()
     resfile = (Path(output_path) / "resfile").resolve()
     resfile.parent.mkdir(parents=True, exist_ok=True)
-    resfile.write_text("start\n")
-    for i, s in enumerate(seq, start=1):
-        resfile.write_text(f"{i} A PIKAA {s}\n")
+    with resfile.open("w") as f:
+        f.write("start\n")
+        for i, s in enumerate(seq, start=1):
+            f.write(f"{i} A PIKAA {s}\n")
 
     return resfile
 
@@ -60,9 +61,10 @@ def write_blueprint(packed_pose: PackedPose, output_path: str) -> Path:
     space = " " * 4
     blueprint = (Path(output_path) / "blueprint").resolve()
     blueprint.parent.mkdir(parents=True, exist_ok=True)
-    for i, _ in enumerate(seq):
-        blueprint.write_text(f"0{space}{seq[i]}{space}{ss[i]}{abegos[i]}{space}R\n")
-    
+    with blueprint.open("w") as f:
+        for i in range(len(seq)):
+            f.write(f"0{space}{seq[i]}{space}{ss[i]}{abegos[i]}{space}R\n")
+
     return blueprint
 
 
