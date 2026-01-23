@@ -100,9 +100,6 @@
         clear_designable_residues="1"
         repeats="1"
         ramp_down_constraints="1"/>
-    <RunSimpleMetrics name="run_simple_metrics"
-        metrics="rmsd_all,rmsd_all_heavy,rmsd_protein_bb_ca,rmsd_protein_bb_heavy,rmsd_protein_bb_heavy_including_O,rmsd_sc,rmsd_sc_heavy"
-        override="0"/>
 </MOVERS>
 
 <FILTERS>
@@ -122,7 +119,7 @@
     <Add filter="nres"/>
     <Add filter="total_score"/>
     <Add filter="total_score_res"/>
-    <Add mover="run_simple_metrics"/>
+    <Add metrics="rmsd_all,rmsd_all_heavy,rmsd_protein_bb_ca,rmsd_protein_bb_heavy,rmsd_protein_bb_heavy_including_O,rmsd_sc,rmsd_sc_heavy"/>
 </PROTOCOLS>
 
 <OUTPUT scorefxn="sfxn_std"/>
