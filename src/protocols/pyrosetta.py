@@ -114,7 +114,7 @@ def blueprintbdr(
         return None
 
     # Score
-    scorefxn = pyrosetta.create_energy_function("ref2015")
+    scorefxn = pyrosetta.create_score_function("ref2015")
     total_score = scorefxn(src_pose)
     total_score_res = total_score / src_pose.size()
     src_pose.cache["total_score_ref2015"] = total_score
