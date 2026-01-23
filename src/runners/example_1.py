@@ -77,8 +77,8 @@ def get_input_packed_pose(pdb_code: str) -> PackedPose:
         The first model in the multimodel PDB accession number as a `PackedPose` object.
     """
     with tempfile.TemporaryDirectory() as tmp_dir:
-        pdb_filename = Path(tmp_dir) / f"{pdb_code}.pdb"
-        load_from_rcsb(pdb_code, pdb_filename=str(pdb_filename))
+        pdb_filename = str(Path(tmp_dir) / f"{pdb_code}.pdb")
+        load_from_rcsb(pdb_code, pdb_filename=pdb_filename)
         packed_poses = io.poses_from_multimodel_pdb(pdb_filename)
 
     return next(iter(packed_poses))
