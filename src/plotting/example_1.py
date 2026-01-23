@@ -19,7 +19,7 @@ def main(
     output_path: str,
     simulation_records_in_scorefile: bool = True,
     set_xlim: bool = True,
-    set_ylim: bool = False,
+    set_ylim: bool = True,
 ) -> None:
     """Plot PyRosettaCluster usage example #1 results."""
     scorefile = Path(output_path) / "scores.json"
@@ -120,15 +120,15 @@ if __name__ == "__main__":
         help="Do not set the x-axis limits.",
     )
     parser.add_argument(
-        "--set_ylim",
+        "--no-set_ylim",
         dest="set_ylim",
-        action="store_true",
-        help="Set the y-axis limits.",
+        action="store_false",
+        help="Do not set the y-axis limits.",
     )
     parser.set_defaults(
         simulation_records_in_scorefile=True,
         set_xlim=True,
-        set_ylim=False,
+        set_ylim=True,
     )
     args = parser.parse_args()
     main(
