@@ -67,7 +67,8 @@
     <FastDesign name="fastdes"
         task_operations="ex,limitchi2,resfile"
         scorefxn="sfxn_std"
-        clear_designable_residues="0"
+        relaxscript="MonomerRelax2019"
+        clear_designable_residues="1"
         repeats="1"
         ramp_down_constraints="1"/>
     <RunSimpleMetrics name="run_simple_metrics"
@@ -88,7 +89,6 @@
     <Add mover="save_native"/>
     <Add mover="set_ssene1" />
     <Add mover="bdr"/>
-    <Add mover="add_csts"/>
     <Add mover="fastdes"/>
     <Add filter="nres"/>
     <Add filter="total_score"/>
