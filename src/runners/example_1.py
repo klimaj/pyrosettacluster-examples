@@ -79,9 +79,9 @@ def get_input_packed_pose(pdb_code: str) -> PackedPose:
     with tempfile.TemporaryDirectory() as tmp_dir:
         pdb_filename = str(Path(tmp_dir) / f"{pdb_code}.pdb")
         load_from_rcsb(pdb_code, pdb_filename=pdb_filename)
-        packed_poses = io.poses_from_multimodel_pdb(pdb_filename)
+        packed_pose = next(iter(io.poses_from_multimodel_pdb(pdb_filename)))
 
-    return next(iter(packed_poses))
+    return packed_pose
 
 
 def create_tasks(xml_str: str, num_tasks: int) -> Generator[Dict[str, Any], None, None]:
