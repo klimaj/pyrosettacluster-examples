@@ -117,7 +117,7 @@ def main(
     input_packed_pose = get_input_packed_pose(PDB_CODE)
     resfile = write_resfile(input_packed_pose, output_path)
     blueprint = write_blueprint(input_packed_pose, output_path)
-    xml_file = Path(__file__).parent / "rosetta_scripts" / "blueprintbdr.xml"
+    xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "blueprintbdr.xml"
     xml_str = xml_file.read_text().format(
         resfile=resfile,
         blueprint=blueprint,
