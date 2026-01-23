@@ -80,7 +80,7 @@ def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
 def main(
     output_path: str,
     scratch_dir: str,
-    num_tasks: int = 4,
+    num_tasks: int = 20,
 ) -> None:
     """Run the PyRosettaCluster example #1 simulation."""
     # Initialize PyRosetta
