@@ -73,7 +73,7 @@ def main(
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
     ax.set_ylabel(r"Total Score ($\mathtt{beta\_jan25}$)", fontsize=label_fontsize)
     cbar = ax.collections[0].colorbar
-    cbar.set_label(f"Seed ($\\times 10^{{cbar_magnitude}}$)", fontsize=label_fontsize)
+    cbar.set_label(f"Seed ($\\times 10^{cbar_magnitude}$)", fontsize=label_fontsize)
     fig.tight_layout()
     fig.savefig(
         Path(output_path) / "rmsd_total_score_seed_scatter_plot.png",
