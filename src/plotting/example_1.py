@@ -101,8 +101,8 @@ def main(
     x_max = df.loc[idx_max, x]
     y_max = df.loc[idx_max, y]
     c_max = df.loc[idx_max, c] / cbar_scale
-    markersize_small = 7
-    markersize_large = 10
+    markersize_small = 6
+    markersize_large = 9
     idx_min_color = plt.cm.RdBu(norm(c_min))
     idx_max_color = plt.cm.RdBu(norm(c_max))
     ax.scatter(x_min, y_min, marker="o", s=s * 3, edgecolor="k", color=idx_min_color, lw=1, zorder=5)
