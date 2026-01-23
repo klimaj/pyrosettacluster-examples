@@ -60,11 +60,13 @@ def main(
     y = "total_score"
     c = "seed"
     s = 25
+    marker = "o"
     df.plot.scatter(
         x=x,
         y=y,
         c=df[c] / cbar_scale,
         s=s,
+        marker=marker,
         cmap="RdYlBu",
         norm=norm,
         edgecolor="k",
@@ -103,16 +105,19 @@ def main(
     c_max = df.loc[idx_max, c] / cbar_scale
     markersize_small = 6
     markersize_large = 9
+    idx_min_marker = "^"
+    idx_max_marker = "s"
+    idx_max_plus_1_marker = "+"
     idx_min_color = plt.cm.RdBu(norm(c_min))
     idx_max_color = plt.cm.RdBu(norm(c_max))
-    ax.scatter(x_min, y_min, marker="o", s=s * 3, edgecolor="k", color=idx_min_color, lw=1, zorder=5)
-    ax.scatter(x_max, y_max, marker="s", s=s * 3, edgecolor="k", color=idx_max_color, lw=1, zorder=5)
-    ax.scatter(x_min, y_min, marker="+", s=s * 7, color="k", lw=2, zorder=5)
+    ax.scatter(x_min, y_min, marker=idx_min_marker, s=s * 3, edgecolor="k", color=idx_min_color, lw=1, zorder=5)
+    ax.scatter(x_max, y_max, marker=idx_max_marker, s=s * 3, edgecolor="k", color=idx_max_color, lw=1, zorder=5)
+    ax.scatter(x_min, y_min, marker=idx_max_plus_1_marker, s=s * 7, color="k", lw=2, zorder=5)
     legend_handles = [
         # Lowest energy decoy (Decoy-1)
         Line2D(
             [0], [0],
-            marker="o",
+            marker=idx_min_marker,
             color="w",
             markerfacecolor=idx_min_color,
             markeredgecolor="k",
@@ -123,7 +128,7 @@ def main(
         # Highest energy decoy (Decoy-N)
         Line2D(
             [0], [0],
-            marker="s",
+            marker=idx_max_marker,
             color="w",
             markerfacecolor=idx_max_color,
             markeredgecolor="k",
@@ -134,7 +139,7 @@ def main(
         # Decoys
         Line2D(
             [0], [0],
-            marker="o",
+            marker=marker,
             color="w",
             markerfacecolor="lightgray",
             markeredgecolor="k",
@@ -145,7 +150,7 @@ def main(
         # Reproduced decoy (Decoy-N+1)
         ax.scatter(
             [], [],
-            marker="+",
+            marker=idx_max_plus_1_marker,
             s=120,
             color="k",
             lw=2,
