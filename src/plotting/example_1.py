@@ -112,8 +112,8 @@ def main(
     idx_max_color = plt.cm.RdBu(norm(c_max))
     ax.scatter(x_min, y_min, marker=idx_min_marker, s=s * 3, edgecolor="k", color=idx_min_color, lw=1, zorder=5)
     ax.scatter(x_max, y_max, marker=idx_max_marker, s=s * 3, edgecolor="k", color=idx_max_color, lw=1, zorder=5)
-    x_r = dfr.iloc[0, x]
-    y_r = dfr.iloc[0, y]
+    x_r = dfr.loc[0, x]
+    y_r = dfr.loc[0, y]
     ax.scatter(x_r, y_r, marker=idx_max_plus_1_marker, s=s * 7, color="k", lw=2, zorder=5)
     legend_handles = [
         # Lowest energy decoy (Decoy-1)
