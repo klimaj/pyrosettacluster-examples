@@ -17,17 +17,11 @@ from typing import Optional
 from src.plotting.config import rc_params
 
 
-def main(
-    output_path: str,
-    scorefxn: str,
-    simulation_records_in_scorefile: bool = True,
-    set_xlim: bool = True,
-    set_ylim: bool = True,
-    y_tick_spacing: int = 3,
-    legend_fontsize: Optional[int] = None,
-) -> None:
-    """Plot PyRosettaCluster usage example #1 results."""
-    scorefile = Path(output_path) / "scores.json"
+def get_df(scorefile: Path, simulation_records_in_scorefile: bool) -> pd.DataFrame:
+    """Return a `pandas.DataFrame` object from a JSON-formatted scorefile."""
+    if not scorefile.name.endswith(".json"):
+        raise ValueError(f"Scorefile must end with '.json'. Received: '{scorefile}")
+
     records = {}
     with scorefile.open("r") as f:
         for line in f:
@@ -41,12 +35,33 @@ def main(
                 records.update(scores)
 
     # Setup DataFrame
-    df = (
+    return (
         pd.DataFrame.from_dict(records, orient="index")
         .reset_index()
         .rename(columns={"index": "output_file"})
     )
 
+
+def main(
+    original_scorefile: str,
+    reproduce_scorefile: str,
+    output_path: str,
+    scorefxn: str,
+    simulation_records_in_scorefile: bool = True,
+    set_xlim: bool = True,
+    set_ylim: bool = True,
+    y_tick_spacing: int = 3,
+    legend_fontsize: Optional[int] = None,
+) -> None:
+    """Plot PyRosettaCluster usage example #1 results."""
+    original_scorefile = Path(original_scorefile)
+    reproduce_scorefile = Path(reproduce_scorefile)
+    df = get_df(original_scorefile, simulation_records_in_scorefile)
+    dfr = get_df(reproduce_scorefile, simulation_records_in_scorefile)
+    if dfr.index.size != 1:
+        raise ValueError(
+            f"The '--reproduce_scorefile' value should only have 1 decoy. Number of results: {dfr.index.size}"
+        )
     # Plot
     mpl.rcParams.update(rc_params)
     dpi = 600
@@ -126,7 +141,9 @@ def main(
     idx_max_color = plt.cm.RdBu(norm(c_max))
     ax.scatter(x_min, y_min, marker=idx_min_marker, s=s * 3, edgecolor="k", color=idx_min_color, lw=1, zorder=5)
     ax.scatter(x_max, y_max, marker=idx_max_marker, s=s * 3, edgecolor="k", color=idx_max_color, lw=1, zorder=5)
-    ax.scatter(x_min, y_min, marker=idx_max_plus_1_marker, s=s * 7, color="k", lw=2, zorder=5)
+    x_r = dfr.iloc[0, x]
+    y_r = dfr.iloc[0, y]
+    ax.scatter(x_r, y_r, marker=idx_max_plus_1_marker, s=s * 7, color="k", lw=2, zorder=5)
     legend_handles = [
         # Lowest energy decoy (Decoy-1)
         Line2D(
@@ -195,10 +212,22 @@ if __name__ == "__main__":
         description="Plot PyRosettaCluster usage example #1 results.",
     )
     parser.add_argument(
+        "--original_scorefile",
+        type=str,
+        required=True,
+        help="The original PyRosettaCluster simulation output scorefile (i.e., a 'scores.json' file).",
+    )
+    parser.add_argument(
+        "--reproduce_scorefile",
+        type=str,
+        required=True,
+        help="The PyRosettaCluster simulation output scorefile from reproduction (i.e., a 'scores.json' file).",
+    )
+    parser.add_argument(
         "--output_path",
         type=str,
         required=True,
-        help="The PyRosettaCluster simulation output directory.",
+        help="An output directory to which to save the figure.",
     )
     parser.add_argument(
         "--scorefxn",
@@ -246,6 +275,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(
+        args.original_scorefile,
+        args.reproduce_scorefile,
         args.output_path,
         args.scorefxn,
         simulation_records_in_scorefile=args.simulation_records_in_scorefile,
