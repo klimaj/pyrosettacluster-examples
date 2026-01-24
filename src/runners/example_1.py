@@ -2,6 +2,7 @@ __author__ = "Jason C. Klima"
 
 
 import argparse
+import hashlib
 import os
 import pyrosetta
 import pyrosetta.distributed.io as io
@@ -18,6 +19,7 @@ from src.protocols.pyrosetta import blueprintbdr
 
 
 PDB_CODE: str = "1L2Y"
+PACKED_POSE_SHA256: str = "c38658b7f62f8deea25031211c52a7a1c68dd53ee23e8a2bceb46feb3f1b7d45"
 
 
 def initialize_pyrosetta() -> None:
@@ -32,7 +34,11 @@ def initialize_pyrosetta() -> None:
 
 def get_input_packed_pose() -> PackedPose:
     """
-    Return a `PackedPose` object from a multimodel PDB accession number.
+    Return a `PackedPose` object from a downloaded multimodel PDB accession number.
+
+    Raises:
+        `AssertionError` if the resulting `PackedPose` object from the downloaded
+        PDB file is not expected.
 
     Returns:
         The first model in the multimodel PDB accession number as a `PackedPose` object.
@@ -41,6 +47,9 @@ def get_input_packed_pose() -> PackedPose:
         pdb_filename = str(Path(tmp_dir) / f"{PDB_CODE}.pdb")
         load_from_rcsb(PDB_CODE, pdb_filename=pdb_filename)
         packed_pose = next(iter(io.poses_from_multimodel_pdb(pdb_filename)))
+
+    if hashlib.sha256(packed_pose.pickled_pose).hexdigest() != PACKED_POSE_SHA256:
+        raise AssertionError("The PackedPose SHA256 digest is not expected.")
 
     return packed_pose
 
