@@ -2,11 +2,9 @@ __author__ = "Jason C. Klima"
 
 
 import argparse
-import json
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.lines import Line2D
@@ -15,49 +13,22 @@ from pathlib import Path
 from typing import Optional
 
 from src.plotting.config import rc_params
-
-
-def get_df(scorefile: Path, simulation_records_in_scorefile: bool) -> pd.DataFrame:
-    """Return a `pandas.DataFrame` object from a JSON-formatted scorefile."""
-    if not scorefile.name.endswith(".json"):
-        raise ValueError(f"Scorefile must end with '.json'. Received: '{scorefile}")
-
-    records = {}
-    with scorefile.open("r") as f:
-        for line in f:
-            if line.strip():
-                d = json.loads(line)
-                if simulation_records_in_scorefile:
-                    output_file = d["metadata"]["output_file"]
-                    scores = {output_file: d["scores"]}
-                else:
-                    scores = d
-                records.update(scores)
-
-    # Setup DataFrame
-    return (
-        pd.DataFrame.from_dict(records, orient="index")
-        .reset_index()
-        .rename(columns={"index": "output_file"})
-    )
+from src.utils import get_dataframe
 
 
 def main(
-    original_scorefile: str,
-    reproduce_scorefile: str,
-    output_path: str,
+    original_scorefile: Path,
+    reproduce_scorefile: Path,
+    output_path: Path,
     scorefxn: str,
-    simulation_records_in_scorefile: bool = True,
     set_xlim: bool = True,
     set_ylim: bool = True,
     y_tick_spacing: int = 3,
     legend_fontsize: Optional[int] = None,
 ) -> None:
     """Plot PyRosettaCluster usage example #1 results."""
-    original_scorefile = Path(original_scorefile)
-    reproduce_scorefile = Path(reproduce_scorefile)
-    df = get_df(original_scorefile, simulation_records_in_scorefile)
-    dfr = get_df(reproduce_scorefile, simulation_records_in_scorefile)
+    df = get_dataframe(original_scorefile)
+    dfr = get_dataframe(reproduce_scorefile)
     if dfr.index.size != 1:
         raise ValueError(
             f"The '--reproduce_scorefile' value should only have 1 decoy. Number of results: {dfr.index.size}"
@@ -198,7 +169,7 @@ def main(
     )
     # Save
     fig.tight_layout()
-    fig_filename = Path(output_path) / "rmsd_total_score_seed_scatter_plot.png"
+    fig_filename = output_path / "rmsd_total_score_seed_scatter_plot.png"
     fig.savefig(
         fig_filename,
         dpi=dpi,
@@ -213,19 +184,19 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--original_scorefile",
-        type=str,
+        type=Path,
         required=True,
         help="The original PyRosettaCluster simulation output scorefile (i.e., a 'scores.json' file).",
     )
     parser.add_argument(
         "--reproduce_scorefile",
-        type=str,
+        type=Path,
         required=True,
         help="The PyRosettaCluster simulation output scorefile from reproduction (i.e., a 'scores.json' file).",
     )
     parser.add_argument(
         "--output_path",
-        type=str,
+        type=Path,
         required=True,
         help="An output directory to which to save the figure.",
     )
@@ -235,12 +206,6 @@ if __name__ == "__main__":
         required=False,
         default="beta_nov16",
         help="The scorefunction value to plot.",
-    )
-    parser.add_argument(
-        "--no-simulation_records_in_scorefile",
-        dest="simulation_records_in_scorefile",
-        action="store_false",
-        help="Simulation records are not in the PyRosettaCluster output scorefile.",
     )
     parser.add_argument(
         "--no-set_xlim",
@@ -269,7 +234,6 @@ if __name__ == "__main__":
         help="Set the legend fontsize.",
     )
     parser.set_defaults(
-        simulation_records_in_scorefile=True,
         set_xlim=True,
         set_ylim=True,
     )
@@ -279,7 +243,6 @@ if __name__ == "__main__":
         args.reproduce_scorefile,
         args.output_path,
         args.scorefxn,
-        simulation_records_in_scorefile=args.simulation_records_in_scorefile,
         set_xlim=args.set_xlim,
         set_ylim=args.set_ylim,
         y_tick_spacing=args.y_tick_spacing,

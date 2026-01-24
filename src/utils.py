@@ -1,6 +1,8 @@
 __author__ = "Jason C. Klima"
 
 
+import json
+import pandas as pd
 import pyrosetta
 import time
 
@@ -83,3 +85,35 @@ def timeit(func: T) -> T:
         return result
 
     return cast(T, wrapper)
+
+
+def get_dataframe(scorefile: Path) -> pd.DataFrame:
+    """
+    Return a `pandas.DataFrame` object from a JSON-formatted scorefile.
+
+    Args:
+        scorefile: A required `Path` object to the JSON-formatted scorefile.
+
+    Returns:
+        A `pandas.DataFrame` object.
+    """
+    if not scorefile.name.endswith(".json"):
+        raise ValueError(f"Scorefile must end with '.json'. Received: '{scorefile}")
+
+    records = {}
+    with scorefile.open("r") as f:
+        for line in f:
+            if line.strip():
+                d = json.loads(line)
+                if all(x in d for x in ("instance", "metadata", "scores")):
+                    output_file = d["metadata"]["output_file"]
+                    scores = {output_file: d["scores"]}
+                else:
+                    scores = d
+                records.update(scores)
+
+    return (
+        pd.DataFrame.from_dict(records, orient="index")
+        .reset_index()
+        .rename(columns={"index": "output_file"})
+    )
