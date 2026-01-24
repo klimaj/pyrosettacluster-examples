@@ -27,7 +27,7 @@ def initialize_pyrosetta() -> None:
     Returns:
         None
     """
-    pyrosetta.init("-run:constant_seed 1")
+    pyrosetta.init("-run:constant_seed 1 -multithreading:total_threads 1")
 
 
 def get_input_packed_pose() -> PackedPose:
@@ -80,7 +80,7 @@ def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
 def main(
     output_path: str,
     scratch_dir: str,
-    num_tasks: int = 20,
+    num_tasks: int,
 ) -> None:
     """Run the PyRosettaCluster example #1 simulation."""
     # Initialize PyRosetta
@@ -97,7 +97,7 @@ def main(
     with LocalCluster(
         n_workers=n_workers,
         threads_per_worker=1,
-        memory_limit=f"{12.6 / n_workers:.1f}GB",
+        memory_limit=f"{12.7 / n_workers:.2f}GB",
         scheduler_port=8786,
         dashboard_address=":8787",
         resources={"CPU": 1},
@@ -137,5 +137,16 @@ if __name__ == "__main__":
         required=True,
         help="The PyRosettaCluster simulation scratch directory.",
     )
+    parser.add_argument(
+        "--num_tasks",
+        type=int,
+        default=50,
+        required=False,
+        help="The number of tasks in the PyRosettaCluster simulation.",
+    )
     args = parser.parse_args()
-    main(args.output_path, args.scratch_dir)
+    main(
+        args.output_path,
+        args.scratch_dir,
+        args.num_tasks,
+    )
