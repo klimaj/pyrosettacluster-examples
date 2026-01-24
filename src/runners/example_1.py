@@ -6,10 +6,12 @@ import hashlib
 import os
 import pyrosetta
 import pyrosetta.distributed.io as io
+import struct
 import tempfile
 
 from dask.distributed import Client, LocalCluster
 from pathlib import Path
+from pyrosetta import Pose
 from pyrosetta.distributed.cluster import PyRosettaCluster
 from pyrosetta.distributed.packed_pose.core import PackedPose
 from pyrosetta.toolbox.rcsb import load_from_rcsb
@@ -19,7 +21,8 @@ from src.protocols.pyrosetta import blueprintbdr
 
 
 PDB_CODE: str = "1L2Y"
-PACKED_POSE_SHA256: str = "c38658b7f62f8deea25031211c52a7a1c68dd53ee23e8a2bceb46feb3f1b7d45"
+PDB_CODE_SHA256: str = "5d1bbb545a312dfff1ae1e64b6d8addecb2f561ddc4011aeb5bee9d1dfcd4438"
+PACKED_POSE_SHA256: str = "510d68790d6778fbca3a9c97752fde011a4c9a2debaebcc99d8f5938931fca1f"
 
 
 def initialize_pyrosetta() -> None:
@@ -43,12 +46,52 @@ def get_input_packed_pose() -> PackedPose:
     Returns:
         The first model in the multimodel PDB accession number as a `PackedPose` object.
     """
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        pdb_filename = str(Path(tmp_dir) / f"{PDB_CODE}.pdb")
-        load_from_rcsb(PDB_CODE, pdb_filename=pdb_filename)
-        packed_pose = next(iter(io.poses_from_multimodel_pdb(pdb_filename)))
 
-    if hashlib.sha256(packed_pose.pickled_pose).hexdigest() != PACKED_POSE_SHA256:
+    def get_pdb_code_digest(pdb_filename: Path) -> str:
+        """
+        Return a SHA256 digest of the input `Path` object for a PDB file.
+
+        Args:
+            pdb_filename: The input `Path` object to digest.
+
+        Returns:
+            A `str` object representing the `Path` object's SHA256 digest.
+        """
+        with pdb_filename.open("r") as f:
+            return hashlib.sha256(f.read().encode("utf-8")).hexdigest()
+
+    def get_pose_digest(pose: Pose) -> str:
+        """
+        Return a SHA256 digest of residue numbers, atom numbers, atom names,
+        and double precision atomic coordinates of the `Pose` object.
+
+        Args:
+            pose: The input `Pose` object to digest.
+
+        Returns:
+            A `str` object representing the `Pose` object's SHA256 digest.
+        """
+        h = hashlib.sha256()
+        for res in range(1, pose.size() + 1):
+            residue = pose.residue(res)
+            h.update(struct.pack("!i", res))
+            h.update(residue.name().strip().encode("utf-8"))
+            for atom in range(1, residue.natoms() + 1):
+                h.update(residue.atom_name(atom).strip().encode("utf-8"))
+                xyz = residue.atom(atom).xyz()
+                for axis in "xyz":
+                    h.update(struct.pack("!d", getattr(xyz, axis)))
+
+        return h.hexdigest()
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        pdb_filename = Path(tmp_dir) / f"{PDB_CODE}.pdb"
+        load_from_rcsb(PDB_CODE, pdb_filename=pdb_filename)
+        pdb_code_digest = get_pdb_code_digest(pdb_filename)
+        if pdb_code_digest != PDB_CODE_SHA256:
+            raise AssertionError("The PDB file SHA256 digest is not expected.")
+        packed_pose = next(iter(io.poses_from_multimodel_pdb(pdb_filename)))
+    if get_pose_digest(packed_pose.pose) != PACKED_POSE_SHA256:
         raise AssertionError("The PackedPose SHA256 digest is not expected.")
 
     return packed_pose
