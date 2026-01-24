@@ -19,6 +19,7 @@ from src.plotting.config import rc_params
 
 def main(
     output_path: str,
+    scorefxn: str,
     simulation_records_in_scorefile: bool = True,
     set_xlim: bool = True,
     set_ylim: bool = True,
@@ -57,7 +58,14 @@ def main(
         vmax=((2 ** 32 / 2) - 1) / cbar_scale,
     )
     x = "rmsd_all_heavy"
-    y = "total_score"
+    if scorefxn == "beta_nov16":
+        y = "total_score"
+    elif scorefxn == "beta_jan25":
+        y = "total_score_beta_jan25"
+    elif scorefxn == "ref2015":
+        y = "total_score_ref2015"
+    else:
+        raise ValueError(f"Scorefunction is not supported: '{scorefxn}'")
     c = "seed"
     s = 25
     marker = "o"
@@ -81,7 +89,13 @@ def main(
     # Adjust axes labels
     label_fontsize = 12
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
-    ax.set_ylabel(r"Total Score ($\mathtt{beta\_jan25}$)", fontsize=label_fontsize)
+    if scorefxn == "beta_nov16":
+        ylabel = r"Total Score ($\mathtt{beta\_nov16}$)"
+    elif scorefxn == "beta_jan25":
+        ylabel = r"Total Score ($\mathtt{beta\_jan25}$)"
+    elif scorefxn == "ref2015":
+        ylabel = r"Total Score ($\mathtt{ref2015}$)"
+    ax.set_ylabel(ylabel, fontsize=label_fontsize)
     cbar = ax.collections[0].colorbar
     cbar.set_label(f"Seed ($\\times 10^{cbar_magnitude}$)", fontsize=label_fontsize)
     # Adjust axes tick marks
@@ -190,6 +204,13 @@ if __name__ == "__main__":
         help="The PyRosettaCluster simulation output directory.",
     )
     parser.add_argument(
+        "--scorefxn",
+        type=str,
+        required=False,
+        default="beta_nov16",
+        help="The scorefunction value to plot.",
+    )
+    parser.add_argument(
         "--no-simulation_records_in_scorefile",
         dest="simulation_records_in_scorefile",
         action="store_false",
@@ -222,6 +243,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main(
         args.output_path,
+        args.scorefxn,
         simulation_records_in_scorefile=args.simulation_records_in_scorefile,
         set_xlim=args.set_xlim,
         set_ylim=args.set_ylim,

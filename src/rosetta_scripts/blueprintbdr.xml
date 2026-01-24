@@ -5,7 +5,8 @@
     This protocol sets up secondary structure energies, runs BluePrintBDR with a provided blueprint file, and then runs FastDesign with a provided resfile.
 
 <SCOREFXNS>
-    <ScoreFunction name="sfxn_std" weights="beta_jan25"/>
+    <ScoreFunction name="sfxn_std" weights="beta_nov16"/>
+    <ScoreFunction name="sfxn_beta_jan25" weights="beta_jan25"/>
     <ScoreFunction name="sfxn1" weights="fldsgn_cen">
         <Reweight scoretype="hbond_sr_bb" weight="1.0" />
         <Reweight scoretype="hbond_lr_bb" weight="1.0" />
@@ -104,6 +105,7 @@
 
 <FILTERS>
     <ResidueCount name="nres" confidence="0"/>
+    <ScoreType name="total_score_beta_jan25" scorefxn="sfxn_beta_jan25" score_type="total_score" threshold="99999" confidence="0"/>
     <ScoreType name="total_score" scorefxn="sfxn_std" score_type="total_score" threshold="99999" confidence="0"/>
     <CalculatorFilter name="total_score_res" threshold="0" equation="SCORE/RES" confidence="0">
         <Var name="SCORE" filter="total_score"/>
@@ -117,6 +119,7 @@
     <Add mover="bdr"/>
     <Add mover="fastdes"/>
     <Add filter="nres"/>
+    <Add filter="total_score_beta_jan25"/>
     <Add filter="total_score"/>
     <Add filter="total_score_res"/>
     <Add metrics="rmsd_all,rmsd_all_heavy,rmsd_protein_bb_ca,rmsd_protein_bb_heavy,rmsd_protein_bb_heavy_including_O,rmsd_sc,rmsd_sc_heavy"/>
