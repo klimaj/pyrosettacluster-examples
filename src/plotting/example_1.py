@@ -204,7 +204,7 @@ if __name__ == "__main__":
         "--scorefxn",
         type=str,
         required=False,
-        default="beta_nov16",
+        default="beta_jan25",
         help="The scorefunction value to plot.",
     )
     parser.add_argument(
