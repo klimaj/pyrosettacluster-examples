@@ -62,7 +62,7 @@ def blueprintbdr(
 
     Returns:
         A `PackedPose` object with cached scores (total score, RMSD values, and PyRosetta seed),
-        or `None` if the `SingleoutputRosettaScriptsTask` execution fails.
+        or `None` if the `SingleoutputRosettaScriptsTask` execution fails or 'total_score' is >= 0.
     """
     import logging
     import pyrosetta
@@ -108,6 +108,10 @@ def blueprintbdr(
         src_pose = rosetta_scripts.SingleoutputRosettaScriptsTask(xml_str)(packed_pose).pose
     except Exception as ex:
         logging.error(f"{type(ex).__name__}: Failed to run `SingleoutputRosettaScriptsTask`. {ex}")
+        return None
+
+    # Filter
+    if src_pose.cache["total_score"] >= 0.0:
         return None
 
     # Score
