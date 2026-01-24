@@ -94,8 +94,8 @@ def main(
 
     # Run the simulation
     with LocalCluster(
-        n_workers=n_workers,
-        threads_per_worker=1,
+        n_workers=1,
+        threads_per_worker=n_workers,
         memory_limit=f"{12.7 / n_workers:.2f}GB",
         scheduler_port=8786,
         dashboard_address=":8787",
