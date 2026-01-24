@@ -45,7 +45,7 @@ def main(
         vmax=((2 ** 32 / 2) - 1) / cbar_scale,
     )
     x = "rmsd_all_heavy"
-    if scorefxn == "beta_nov16":
+    if scorefxn == "beta_jan25":
         y = "total_score"
     elif scorefxn == "ref2015":
         y = "total_score_ref2015"
