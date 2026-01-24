@@ -23,6 +23,7 @@ def main(
     simulation_records_in_scorefile: bool = True,
     set_xlim: bool = True,
     set_ylim: bool = True,
+    y_tick_spacing: int = 3,
     legend_fontsize: Optional[int] = None,
 ) -> None:
     """Plot PyRosettaCluster usage example #1 results."""
@@ -100,7 +101,7 @@ def main(
     ax.tick_params(axis="y", labelsize=tick_fontsize)
     cbar.ax.tick_params(labelsize=tick_fontsize)
     ax.xaxis.set_major_locator(MultipleLocator(1))
-    y_ticks = np.arange(ymin, np.ceil(ax.get_ylim()[1]) + 3, 3)
+    y_ticks = np.arange(ymin, np.ceil(ax.get_ylim()[1]) + y_tick_spacing, y_tick_spacing)
     ax.yaxis.set_major_locator(FixedLocator(y_ticks))
     cbar.ax.yaxis.set_major_locator(MultipleLocator(0.5))
     # Set title
@@ -225,6 +226,13 @@ if __name__ == "__main__":
         help="Do not set the y-axis limits.",
     )
     parser.add_argument(
+        "--y_tick_spacing",
+        type=int,
+        required=False,
+        default=#,
+        help="The y-axis tick spacing.",
+    )
+    parser.add_argument(
         "--legend_fontsize",
         type=int,
         required=False,
@@ -243,5 +251,6 @@ if __name__ == "__main__":
         simulation_records_in_scorefile=args.simulation_records_in_scorefile,
         set_xlim=args.set_xlim,
         set_ylim=args.set_ylim,
+        y_tick_spacing=args.y_tick_spacing,
         legend_fontsize=args.legend_fontsize,
     )
