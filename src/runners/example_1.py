@@ -55,7 +55,7 @@ def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
     Yields:
         An output `dict` object representing a task.
     """
-    for task_id in range(num_tasks):
+    for _ in range(num_tasks):
         yield {
             "options": {
                 "beta_jan25": "1",
@@ -73,7 +73,6 @@ def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
                 "connect_info_cutoff": "3.0",
             },
             "set_logging_handler": "logging",
-            "task_id": task_id,
         }
 
 

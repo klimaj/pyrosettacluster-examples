@@ -3,7 +3,7 @@ __author__ = "Jason C. Klima"
 
 from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from src.utils import (
     timeit,
@@ -28,8 +28,6 @@ def test_protocol(
         A `tuple` object containing the input `PackedPose` object
         and input keyword arguments.
     """
-    import pyrosetta
-
     client_repr = kwargs["PyRosettaCluster_client_repr"]
     protocol_name = kwargs["PyRosettaCluster_protocol_name"]
     protocol_number = kwargs["PyRosettaCluster_protocol_number"]
@@ -52,18 +50,19 @@ def test_protocol(
 @requires_packed_pose
 def blueprintbdr(
     packed_pose: PackedPose, **kwargs: Any
-) -> Tuple[PackedPose, Dict[str, Any]]:
+) -> Optional[PackedPose]:
     """
-    A PyRosettaCluster protocol.
+    A PyRosetta protocol that runs the `BluePrintBDR` mover followed by structure-based scoring.
 
     Args:
         packed_pose: A required input `PackedPose` object.
 
-    Keyword Arguments:
-        xml_str: A required `str` object representing a RosettaScripts XML file string.
+    Keyword Args:
+        PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
-        An output `PackedPose` object, otherwise `None` if an exception is raised.
+        A `PackedPose` object with cached scores (total score, RMSD values, and PyRosetta seed),
+        or `None` if the `SingleoutputRosettaScriptsTask` execution fails.
     """
     import logging
     import pyrosetta
@@ -78,14 +77,12 @@ def blueprintbdr(
         CA_rmsd,
     )
 
-    task_id = kwargs["task_id"]
     protocol_name = kwargs["PyRosettaCluster_protocol_name"]
     protocol_number = kwargs["PyRosettaCluster_protocol_number"]
     seed = kwargs["PyRosettaCluster_seed"]
     client_repr = kwargs["PyRosettaCluster_client_repr"]
     print(
         "Running --",
-        f"Task ID: {task_id};",
         f"Protocol name: '{protocol_name}';",
         f"Protocol number: {protocol_number};",
         f"Protocol seed: {seed};",
