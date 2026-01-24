@@ -10,7 +10,7 @@ import pandas as pd
 
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.lines import Line2D
-from matplotlib.ticker import MultipleLocator
+from matplotlib.ticker import FixedLocator, MultipleLocator
 from pathlib import Path
 from typing import Optional
 
@@ -73,11 +73,11 @@ def main(
         ax=ax,
     )
     if set_xlim:
-        x_min = max(np.floor(df[x].min()) - 1, 0)
-        ax.set_xlim(left=x_min)
+        xmin = max(np.floor(df[x].min()) - 1, 0)
+        ax.set_xlim(left=xmin)
     if set_ylim:
-        y_min = np.floor(df[y].min()) - 1
-        ax.set_ylim(bottom=y_min)
+        ymin = np.floor(df[y].min()) - 1
+        ax.set_ylim(bottom=ymin)
     # Adjust axes labels
     label_fontsize = 12
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
@@ -90,7 +90,8 @@ def main(
     ax.tick_params(axis="y", labelsize=tick_fontsize)
     cbar.ax.tick_params(labelsize=tick_fontsize)
     ax.xaxis.set_major_locator(MultipleLocator(1))
-    ax.yaxis.set_major_locator(MultipleLocator(3))
+    y_ticks = np.arange(ymin, np.ceil(ax.get_ylim()[1]) + 3, 3)
+    ax.yaxis.set_major_locator(FixedLocator(y_ticks))
     cbar.ax.yaxis.set_major_locator(MultipleLocator(0.5))
     # Set title
     ax.set_title("Heavy Atom RMSD vs. Total Score", fontsize=14)
