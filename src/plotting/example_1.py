@@ -229,7 +229,7 @@ if __name__ == "__main__":
         "--y_tick_spacing",
         type=int,
         required=False,
-        default=#,
+        default=3,
         help="The y-axis tick spacing.",
     )
     parser.add_argument(
