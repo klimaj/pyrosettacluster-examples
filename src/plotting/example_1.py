@@ -60,8 +60,6 @@ def main(
     x = "rmsd_all_heavy"
     if scorefxn == "beta_nov16":
         y = "total_score"
-    elif scorefxn == "beta_jan25":
-        y = "total_score_beta_jan25"
     elif scorefxn == "ref2015":
         y = "total_score_ref2015"
     else:
@@ -91,8 +89,6 @@ def main(
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
     if scorefxn == "beta_nov16":
         ylabel = r"Total Score ($\mathtt{beta\_nov16}$)"
-    elif scorefxn == "beta_jan25":
-        ylabel = r"Total Score ($\mathtt{beta\_jan25}$)"
     elif scorefxn == "ref2015":
         ylabel = r"Total Score ($\mathtt{ref2015}$)"
     ax.set_ylabel(ylabel, fontsize=label_fontsize)
