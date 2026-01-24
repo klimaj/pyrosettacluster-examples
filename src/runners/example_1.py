@@ -112,6 +112,12 @@ def main(
             project_name="pyrosettacluster-examples",
             simulation_name="example-1",
             simulation_records_in_scorefile=True,
+            output_init_file=False,
+            author=__author__,
+            license=(
+                f"Copyright (c) {__author__}. "
+                "Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND)"
+            ),
         ).distribute(
             protocols=protocols,
             clients_indices=[0] * num_protocols,
