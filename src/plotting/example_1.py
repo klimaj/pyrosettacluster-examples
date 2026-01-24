@@ -96,10 +96,12 @@ def main(
     ax.set_title("Heavy Atom RMSD vs. Total Score", fontsize=14)
     # Adjust Legend
     idx_min = df[y].idxmin()
+    print(f"Lowest energy decoy:", df.loc[idx_min, "output_file"])
     x_min = df.loc[idx_min, x]
     y_min = df.loc[idx_min, y]
     c_min = df.loc[idx_min, c] / cbar_scale
     idx_max = df[y].idxmax()
+    print(f"Highest energy decoy:", df.loc[idx_max, "output_file"])
     x_max = df.loc[idx_max, x]
     y_max = df.loc[idx_max, y]
     c_max = df.loc[idx_max, c] / cbar_scale
