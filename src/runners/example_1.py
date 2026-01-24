@@ -111,6 +111,7 @@ def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
         yield {
             "options": {
                 "beta_jan25": "1",
+                "score:count_pair_hybrid": "0",
             },
             "extra_options": {
                 "multithreading:total_threads": "1",
