@@ -23,12 +23,12 @@ def main(original_scorefile: Path, scorefxn: str) -> None:
     x_min = df.loc[idx_min, x]
     y_min = df.loc[idx_min, y]
     c_min = df.loc[idx_min, c]
-    print(f"Lowest energy decoy ({x_min}, {y_min}, {int(c_min )}):", df.loc[idx_min, "output_file"])
+    print(f"Lowest energy decoy ({x}={x_min}; {y}={y_min}; {c}={int(c_min)}):", df.loc[idx_min, "output_file"],)
     idx_max = df[y].idxmax()
     x_max = df.loc[idx_max, x]
     y_max = df.loc[idx_max, y]
     c_max = df.loc[idx_max, c]
-    print(f"Highest energy decoy ({x_max}, {y_max}, {int(c_max)}):", df.loc[idx_max, "output_file"])
+    print(f"Highest energy decoy ({x}={x_max}, {y}={y_max}, {c}={int(c_max)}):", df.loc[idx_max, "output_file"])
 
 
 if __name__ == "__main__":
