@@ -112,7 +112,7 @@ def main(
             project_name="pyrosettacluster-examples",
             simulation_name="example-1",
             simulation_records_in_scorefile=True,
-            output_init_file=False,
+            output_init_file=None,
             author=__author__,
             license=(
                 f"Copyright (c) {__author__}. "
