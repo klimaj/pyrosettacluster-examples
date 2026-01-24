@@ -170,11 +170,13 @@ def main(
     )
     # Save
     fig.tight_layout()
+    fig_filename = Path(output_path) / "rmsd_total_score_seed_scatter_plot.png"
     fig.savefig(
-        Path(output_path) / "rmsd_total_score_seed_scatter_plot.png",
+        fig_filename,
         dpi=dpi,
         bbox_inches="tight",
     )
+    print(f"Saved: {fig_filename}")
     plt.close()
 
 if __name__ == "__main__":
