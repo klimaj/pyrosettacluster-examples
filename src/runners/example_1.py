@@ -110,7 +110,7 @@ def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
     for _ in range(num_tasks):
         yield {
             "options": {
-                "beta_nov16": "1",
+                "beta_jan25": "1",
             },
             "extra_options": {
                 "multithreading:total_threads": "1",

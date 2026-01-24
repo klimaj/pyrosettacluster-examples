@@ -74,8 +74,8 @@ def main(
     # Adjust axes labels
     label_fontsize = 12
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
-    if scorefxn == "beta_nov16":
-        ylabel = r"Total Score ($\mathtt{beta\_nov16}$)"
+    if scorefxn == "beta_jan25":
+        ylabel = r"Total Score ($\mathtt{beta\_jan25}$)"
     elif scorefxn == "ref2015":
         ylabel = r"Total Score ($\mathtt{ref2015}$)"
     ax.set_ylabel(ylabel, fontsize=label_fontsize)

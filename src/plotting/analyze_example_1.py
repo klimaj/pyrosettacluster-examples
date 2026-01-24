@@ -12,7 +12,7 @@ def main(original_scorefile: Path, scorefxn: str) -> None:
     """Print info about the lowest and highest energy decoys."""
     df = get_dataframe(original_scorefile)
     x = "rmsd_all_heavy"
-    if scorefxn == "beta_nov16":
+    if scorefxn == "beta_jan25":
         y = "total_score"
     elif scorefxn == "ref2015":
         y = "total_score_ref2015"

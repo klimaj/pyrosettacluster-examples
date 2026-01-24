@@ -5,7 +5,7 @@
     This protocol sets up secondary structure energies, runs BluePrintBDR with a provided blueprint file, and then runs FastDesign with a provided resfile.
 
 <SCOREFXNS>
-    <ScoreFunction name="sfxn_std" weights="beta_nov16"/>
+    <ScoreFunction name="sfxn_std" weights="beta_jan25"/>
     <ScoreFunction name="sfxn1" weights="fldsgn_cen">
         <Reweight scoretype="hbond_sr_bb" weight="1.0" />
         <Reweight scoretype="hbond_lr_bb" weight="1.0" />
