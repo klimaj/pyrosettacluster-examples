@@ -117,7 +117,6 @@
     <Add mover="bdr"/>
     <Add mover="fastdes"/>
     <Add filter="nres"/>
-    <Add filter="total_score_beta_jan25"/>
     <Add filter="total_score"/>
     <Add filter="total_score_res"/>
     <Add metrics="rmsd_all,rmsd_all_heavy,rmsd_protein_bb_ca,rmsd_protein_bb_heavy,rmsd_protein_bb_heavy_including_O,rmsd_sc,rmsd_sc_heavy"/>
