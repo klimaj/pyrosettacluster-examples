@@ -140,3 +140,67 @@ def blueprintbdr(
     src_pose.cache["seed"] = float(seed)
 
     return io.to_packed(src_pose)
+
+
+
+@timeit
+@requires_packed_pose
+def idealize_poly_gly(
+    packed_pose: PackedPose, **kwargs: Any
+) -> Optional[PackedPose]:
+    """
+    A PyRosetta protocol that runs the `BluePrintBDR` mover followed by structure-based scoring.
+
+    Args:
+        packed_pose: A required input `PackedPose` object.
+
+    Keyword Args:
+        PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
+
+    Returns:
+        A `PackedPose` object.
+    """
+    import pyrosetta
+    import pyrosetta.distributed.io as io
+    from pyrosetta.rosetta.protocols.rosetta_scripts import XmlObjects
+
+    protocol_name = kwargs["PyRosettaCluster_protocol_name"]
+    protocol_number = kwargs["PyRosettaCluster_protocol_number"]
+    seed = kwargs["PyRosettaCluster_seed"]
+    client_repr = kwargs["PyRosettaCluster_client_repr"]
+    print(
+        "Running --",
+        f"Protocol name: '{protocol_name}';",
+        f"Protocol number: {protocol_number};",
+        f"Protocol seed: {seed};",
+        f"Client: '{client_repr}';",
+        sep=" ",
+    )
+    # Run RosettaScripts
+    xml_obj = XmlObjects.create_from_string(
+        """
+        <ROSETTASCRIPTS>
+            <MOVERS>
+                <MakePolyX name="make_poly_gly"
+                    aa="GLY"
+                    keep_pro="0"
+                    keep_gly="0"
+                    keep_disulfide_cys="0"/>
+                <Idealize name="idealize"
+                    coordinate_constraint_weight="0.01"
+                    fast="0"
+                    report_CA_rmsd="1"
+                    impose_constraints="1"
+                    constraints_only="0"/>
+            </MOVERS>
+            <PROTOCOLS>
+                <Add mover="make_poly_gly"/>
+                <Add mover="idealize"/>
+            </PROTOCOLS>
+        </ROSETTASCRIPTS>
+        """
+    ).get_mover("ParsedProtocol")
+    pose = packed_pose.pose
+    xml_obj.apply(pose)
+
+    return io.to_packed(pose)

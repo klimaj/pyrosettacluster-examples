@@ -5,10 +5,8 @@ import argparse
 import os
 import subprocess
 import pyrosetta
-import pyrosetta.distributed.io as io
 
 from dask.distributed import Client, LocalCluster
-from pathlib import Path
 from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator
 
