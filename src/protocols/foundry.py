@@ -4,7 +4,7 @@ __author__ = "Jason C. Klima"
 from pyrosetta.distributed.packed_pose.core import PackedPose
 from typing import Any, Optional
 
-from src.utils import timeit
+from src.utils import atom_array_to_packed_pose, timeit
 
 
 @timeit
@@ -51,16 +51,22 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         specification={
             "length": 20,
         },
-        diffusion_batch_size=2,
+        diffusion_batch_size=1,
     )
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)
     # Run RFD3
-    outputs = model.run(
+    results = model.run(
         inputs=None,
         out_dir=None,
         n_batches=1,
     )
-    print(outputs)
+    packed_poses = []
+    for example_id, rfd3_outputs in results.items():
+        for rfd3_output in rfd3_outputs:
+            atom_array = rfd3_output.atom_array
+            packed_pose = atom_array_to_packed_pose(atom_array)
+            packed_poses.append(packed_pose)
+            print(rfd3_output.metadata)
 
-    return packed_pose
+    return packed_poses

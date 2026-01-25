@@ -4,6 +4,7 @@ __author__ = "Jason C. Klima"
 import json
 import pandas as pd
 import pyrosetta
+import pyrosetta.distributed.io as io
 import time
 
 from functools import wraps
@@ -117,3 +118,17 @@ def get_dataframe(scorefile: Path) -> pd.DataFrame:
         .reset_index()
         .rename(columns={"index": "output_file"})
     )
+
+
+def atom_array_to_packed_pose(atom_array: "AtomArray") -> PackedPose:
+    from biotite.structure.io.pdb import PDBFile
+    from io import StringIO
+
+    buffer = StringIO()
+    pdb = PDBFile()
+    pdb.set_structure(atom_array)
+    pdb.write(buffer)
+    pdbstring = buffer.getvalue()
+    packed_pose = io.pose_from_pdbstring(pdbstring)
+
+    return packed_pose
