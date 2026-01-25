@@ -87,11 +87,14 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        protocols = [rfd3, solublempnn]
+        # protocols = [rfd3, solublempnn]
+        # input_packed_pose = None
+        protocols = [solublempnn]
+        input_packed_pose = pyrosetta.pose_from_sequence("TESTMPNN" * 4)
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
-            input_packed_pose=None,
+            input_packed_pose=input_packed_pose,
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,
