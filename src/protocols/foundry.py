@@ -174,7 +174,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     structure_path.write_text(io.to_pdbstring(packed_pose))
     input_dicts = [
         {
-            "structure_path": structure_path,
+            "structure_path": str(structure_path),
             "batch_size": 8,
             "number_of_batches": 1,
             "temperature": 0.05,
