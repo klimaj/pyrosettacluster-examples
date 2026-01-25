@@ -180,7 +180,9 @@ def idealize_poly_gly(
         """
         <ROSETTASCRIPTS>
             <SCOREFXNS>
-                <ScoreFunction name="beta_cart" weights="beta_jan25_cart"/>
+                <ScoreFunction name="beta_cart" weights="beta_jan25_cart">
+                    <Reweight scoretype="coordinate_constraint" weight="1.0"/>
+                </ScoreFunction>
             </SCOREFXNS>
             <MOVE_MAP_FACTORIES>
                 <MoveMapFactory name="mmf" bb="1" chi="0" nu="0" branches="0" cartesian="1" jumps="0"/>

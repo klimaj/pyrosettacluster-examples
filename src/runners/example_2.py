@@ -89,7 +89,7 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        protocols = [idealize_poly_gly, proteinmpnn] # rfd3
+        protocols = [rfd3, idealize_poly_gly, proteinmpnn]
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
