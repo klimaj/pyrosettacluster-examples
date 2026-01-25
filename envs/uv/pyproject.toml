@@ -23,7 +23,7 @@ dependencies = [
 description = "uv project for PyRosettaCluster & Foundry"
 maintainers = [{name = "Jason C. Klima"}]
 name = "pyrosettacluster-uv-project"
-requires-python = "==3.14.*"
+requires-python = "==3.12.*"
 version = "1.0.0"
 
 [tool.uv]
