@@ -23,6 +23,7 @@ def initialize_pyrosetta() -> None:
     """
     pyrosetta.init("-run:constant_seed 1 -multithreading:total_threads 1")
     pyrosetta.secure_unpickle.add_secure_package("pandas")
+    pyrosetta.secure_unpickle.add_secure_package("biotite")
 
 
 def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
