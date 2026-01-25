@@ -32,6 +32,8 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     torch.backends.cudnn.allow_tf32 = False
 
     import pyrosetta
+    pyrosetta.secure_unpickle.add_secure_package("pandas")
+    pyrosetta.secure_unpickle.add_secure_package("biotite")
 
     from lightning.fabric import seed_everything
     from rfd3.engine import RFD3InferenceConfig, RFD3InferenceEngine
