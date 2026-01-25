@@ -63,7 +63,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         specification={
             "length": 20,
         },
-        diffusion_batch_size=2,
+        diffusion_batch_size=1,
     )
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)
@@ -86,9 +86,6 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
             )
             packed_poses.append(packed_pose)
             print(metadata.keys())
-            for k, v in metadata.items():
-                if isinstance(v, dict):
-                    print(v.keys())
             print(metadata)
             print(packed_pose.pose.sequence())
 

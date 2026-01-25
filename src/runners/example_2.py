@@ -87,6 +87,8 @@ def main(
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,
+            seeds=[111],
+            decoy_ids=[0],
             project_name="pyrosettacluster-examples",
             simulation_name="example-2",
             simulation_records_in_scorefile=False,
