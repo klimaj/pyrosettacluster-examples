@@ -90,6 +90,7 @@ def main(
             simulation_records_in_scorefile=True,
             filter_results=True,
             output_init_file=None,
+            output_scorefile_types=[".json", ".bz2"]
             author=__author__,
             license=(
                 f"Copyright (c) {__author__}. "
