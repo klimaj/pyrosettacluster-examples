@@ -67,9 +67,9 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         f"Protocol number: {protocol_number};",
         f"Protocol seed: {seed};",
         f"Client: '{client_repr}';",
-        f"CUDA is available: {cuda_is_available}",
-        f"CUDA device count: {cuda_device_count}",
-        f"CUDA device name: {cuda_device_name}",
+        f"CUDA is available: {cuda_is_available};",
+        f"CUDA device count: {cuda_device_count};",
+        f"CUDA device name: {cuda_device_name};",
         sep=" ",
     )
     # Setup seed
@@ -152,19 +152,18 @@ def solublempnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         f"Protocol number: {protocol_number};",
         f"Protocol seed: {seed};",
         f"Client: '{client_repr}';",
-        f"CUDA is available: {cuda_is_available}",
-        f"CUDA device count: {cuda_device_count}",
-        f"CUDA device name: {cuda_device_name}",
+        f"CUDA is available: {cuda_is_available};",
+        f"CUDA device count: {cuda_device_count};",
+        f"CUDA device name: {cuda_device_name};",
         sep=" ",
     )
-
     # Setup seed
     torch_seed = pyrosetta_to_torch_seed(seed)
     seed_everything(torch_seed)
     # Configure MPNNInferenceEngine
     config = {
         "model_type": "protein_mpnn",
-        "checkpoint_path": REGISTERED_CHECKPOINTS["solublempnn"].get_default_path(),
+        "checkpoint_path": str(REGISTERED_CHECKPOINTS["solublempnn"].get_default_path()),
         "is_legacy_weights": False,
         "out_directory": None,
         "write_structures": False,
