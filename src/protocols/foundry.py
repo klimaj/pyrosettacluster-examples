@@ -107,9 +107,9 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
 
 @timeit
 @requires_packed_pose
-def solublempnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
+def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     """
-    A PyRosetta protocol that runs the SolubleMPNN.
+    A PyRosetta protocol that runs the ProteinMPNN.
 
     Args:
         packed_pose: A required input `PackedPose` object.
@@ -139,7 +139,6 @@ def solublempnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
 
     from lightning.fabric import seed_everything
     from mpnn.inference_engines.mpnn import MPNNInferenceEngine
-    from foundry.inference_engines.checkpoint_registry import REGISTERED_CHECKPOINTS
 
     protocol_name = kwargs["PyRosettaCluster_protocol_name"]
     protocol_number = kwargs["PyRosettaCluster_protocol_number"]
@@ -165,7 +164,6 @@ def solublempnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     # Configure MPNNInferenceEngine
     config = {
         "model_type": "protein_mpnn",
-        "checkpoint_path": str(REGISTERED_CHECKPOINTS["solublempnn"].get_default_path()),
         "is_legacy_weights": False,
         "out_directory": None,
         "write_structures": False,
@@ -188,7 +186,7 @@ def solublempnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
             "seed": torch_seed,
         }
     ]
-    # Run SolubleMPNN
+    # Run ProteinMPNN
     model = MPNNInferenceEngine(**config)
     with torch.no_grad(), torch.cuda.amp.autocast(enabled=False):
         results = model.run(input_dicts=input_dicts)

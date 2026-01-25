@@ -10,7 +10,7 @@ from dask.distributed import Client, LocalCluster
 from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator
 
-from src.protocols.foundry import solublempnn, rfd3
+from src.protocols.foundry import proteinmpnn, rfd3
 
 
 def initialize_pyrosetta() -> None:
@@ -27,7 +27,7 @@ def initialize_pyrosetta() -> None:
 
 def download_checkpoints() -> None:
     subprocess.run(
-        ["foundry", "install", "rfd3", "solublempnn"],
+        ["foundry", "install", "rfd3", "proteinmpnn"],
         check=True,
     )
 
@@ -87,9 +87,9 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        # protocols = [rfd3, solublempnn]
+        # protocols = [rfd3, proteinmpnn]
         # input_packed_pose = None
-        protocols = [solublempnn]
+        protocols = [proteinmpnn]
         input_packed_pose = pyrosetta.pose_from_sequence("TESTMPNN" * 4)
         num_protocols = len(protocols)
         PyRosettaCluster(
