@@ -26,22 +26,22 @@ def initialize_pyrosetta() -> None:
 
 
 def download_checkpoints() -> None:
-    import torch
-    from foundry.inference_engines.checkpoint_registry import REGISTERED_CHECKPOINTS
+    # import torch
+    # from foundry.inference_engines.checkpoint_registry import REGISTERED_CHECKPOINTS
 
     # Download model weights
     subprocess.run(
-        ["foundry", "install", "rfd3", "proteinmpnn"],
+        ["foundry", "install", "proteinmpnn", "ligandmpnn", "solublempnn", "--force"], # "rfd3",
         check=True,
     )
-    # Fix MPNN checkpoints: rename the "model_state_dict" key to "model", which `MPNNInferenceEngine` expects
-    for registered_checkpoint in ("proteinmpnn", "ligandmpnn", "solublempnn"):
-        checkpoint_path = REGISTERED_CHECKPOINTS[registered_checkpoint].get_default_path()
-        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
-        if "model" not in checkpoint and "model_state_dict" in checkpoint:
-            checkpoint["model"] = checkpoint.pop("model_state_dict")
-            torch.save(checkpoint, checkpoint_path)
-            print(f"Automatically renamed 'model_state_dict' to 'model' in MPNN checkpoint: {checkpoint_path}")
+    # # Fix MPNN checkpoints: rename the "model_state_dict" key to "model", which `MPNNInferenceEngine` expects
+    # for registered_checkpoint in ("proteinmpnn", "ligandmpnn", "solublempnn"):
+    #     checkpoint_path = REGISTERED_CHECKPOINTS[registered_checkpoint].get_default_path()
+    #     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    #     if "model" not in checkpoint and "model_state_dict" in checkpoint:
+    #         checkpoint["model"] = checkpoint.pop("model_state_dict")
+    #         torch.save(checkpoint, checkpoint_path)
+    #         print(f"Automatically renamed 'model_state_dict' to 'model' in MPNN checkpoint: {checkpoint_path}")
 
 
 def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:

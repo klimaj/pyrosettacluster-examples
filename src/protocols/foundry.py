@@ -164,7 +164,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     # Configure MPNNInferenceEngine
     config = {
         "model_type": "protein_mpnn",
-        "is_legacy_weights": False,
+        "is_legacy_weights": True,
         "out_directory": None,
         "write_structures": False,
         "write_fasta": False,
