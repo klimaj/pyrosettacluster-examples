@@ -26,22 +26,11 @@ def initialize_pyrosetta() -> None:
 
 
 def download_checkpoints() -> None:
-    # import torch
-    # from foundry.inference_engines.checkpoint_registry import REGISTERED_CHECKPOINTS
-
-    # Download model weights
+    """Download Foundry model weights"""
     subprocess.run(
-        ["foundry", "install", "proteinmpnn", "ligandmpnn", "solublempnn", "--force"], # "rfd3",
+        ["foundry", "install", "rfd3", "proteinmpnn"],
         check=True,
     )
-    # # Fix MPNN checkpoints: rename the "model_state_dict" key to "model", which `MPNNInferenceEngine` expects
-    # for registered_checkpoint in ("proteinmpnn", "ligandmpnn", "solublempnn"):
-    #     checkpoint_path = REGISTERED_CHECKPOINTS[registered_checkpoint].get_default_path()
-    #     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
-    #     if "model" not in checkpoint and "model_state_dict" in checkpoint:
-    #         checkpoint["model"] = checkpoint.pop("model_state_dict")
-    #         torch.save(checkpoint, checkpoint_path)
-    #         print(f"Automatically renamed 'model_state_dict' to 'model' in MPNN checkpoint: {checkpoint_path}")
 
 
 def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
@@ -99,14 +88,11 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        # protocols = [rfd3, proteinmpnn]
-        # input_packed_pose = None
-        protocols = [proteinmpnn]
-        input_packed_pose = pyrosetta.pose_from_sequence("TESTMPNN" * 4)
+        protocols = [rfd3, proteinmpnn]
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
-            input_packed_pose=input_packed_pose,
+            input_packed_pose=None,
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,
