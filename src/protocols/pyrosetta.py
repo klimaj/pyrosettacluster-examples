@@ -160,7 +160,6 @@ def idealize_poly_gly(
     Returns:
         A `PackedPose` object.
     """
-    import pyrosetta
     import pyrosetta.distributed.io as io
     from pyrosetta.rosetta.protocols.rosetta_scripts import XmlObjects
 
@@ -180,22 +179,46 @@ def idealize_poly_gly(
     xml_obj = XmlObjects.create_from_string(
         """
         <ROSETTASCRIPTS>
+            <SCOREFXNS>
+                <ScoreFunction name="beta_cart" weights="beta_jan25_cart"/>
+            </SCOREFXNS>
+            <MOVE_MAP_FACTORIES>
+                <MoveMapFactory name="mmf" bb="1" chi="0" nu="0" branches="0" cartesian="1" jumps="0"/>
+            </MOVE_MAP_FACTORIES>
             <MOVERS>
                 <MakePolyX name="make_poly_gly"
                     aa="GLY"
                     keep_pro="0"
                     keep_gly="0"
                     keep_disulfide_cys="0"/>
-                <Idealize name="idealize"
-                    coordinate_constraint_weight="0.01"
-                    fast="0"
-                    report_CA_rmsd="1"
-                    impose_constraints="1"
-                    constraints_only="0"/>
+                <VirtualRoot name="add_virtual_root" removable="1" remove="0"/>
+                <VirtualRoot name="rm_virtual_root" removable="1" remove="1"/>
+                <AddConstraints name="add_csts">
+                    <CoordinateConstraintGenerator name="coord_cst"
+                        sd="0.1"
+                        bounded="0"
+                        bounded_width="0.0"
+                        sidechain="0"
+                        ca_only="1"
+                        ambiguous_hnq="0"
+                        native="0"
+                        align_reference="0"/>
+                </AddConstraints>
+                <RemoveConstraints name="rm_csts" constraint_generators="coord_cst"/>
+                <MinMover name="min"
+                        scorefxn="beta_cart"
+                        max_iter="200"
+                        type="lbfgs_armijo_nonmonotone"
+                        tolerance="0.01"
+                        movemap_factory="mmf"/>
             </MOVERS>
             <PROTOCOLS>
                 <Add mover="make_poly_gly"/>
-                <Add mover="idealize"/>
+                <Add mover="add_virtual_root"/>
+                <Add mover="add_csts"/>
+                <Add mover="min"/>
+                <Add mover="rm_csts"/>
+                <Add mover="rm_virtual_root"/>
             </PROTOCOLS>
         </ROSETTASCRIPTS>
         """

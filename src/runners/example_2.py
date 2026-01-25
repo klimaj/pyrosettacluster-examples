@@ -11,6 +11,7 @@ from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator
 
 from src.protocols.foundry import proteinmpnn, rfd3
+from src.protocols.pyrosetta import proteinmpnn, idealize_poly_gly
 
 
 def initialize_pyrosetta() -> None:
@@ -88,11 +89,11 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        protocols = [rfd3, proteinmpnn]
+        protocols = [idealize_poly_gly, proteinmpnn] # rfd3
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
-            input_packed_pose=None,
+            input_packed_pose=pyrosetta.pose_from_sequence("TESTMPNN" * 3),
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,

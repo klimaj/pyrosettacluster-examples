@@ -84,7 +84,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)
     # Run RFD3
-    with torch.no_grad(), torch.cuda.amp.autocast(enabled=False):
+    with torch.no_grad(), torch.amp.autocast("cuda", enabled=False):
         results = model.run(
             inputs=None,
             out_dir=None,
@@ -188,7 +188,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     ]
     # Run ProteinMPNN
     model = MPNNInferenceEngine(**config)
-    with torch.no_grad(), torch.cuda.amp.autocast(enabled=False):
+    with torch.no_grad(), torch.amp.autocast("cuda", enabled=False):
         results = model.run(input_dicts=input_dicts)
     # Parse results
     packed_poses = []
