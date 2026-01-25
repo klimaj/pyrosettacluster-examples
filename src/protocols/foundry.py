@@ -21,6 +21,16 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     Returns:
         A `PackedPose` object.
     """
+    import os
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+
+    import torch
+    torch.use_deterministic_algorithms(True)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+
     import pyrosetta
 
     from lightning.fabric import seed_everything
@@ -55,12 +65,14 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     )
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)
+    model.eval()
     # Run RFD3
-    results = model.run(
-        inputs=None,
-        out_dir=None,
-        n_batches=1,
-    )
+    with torch.no_grad(), torch.cuda.amp.autocast(enabled=False):
+        results = model.run(
+            inputs=None,
+            out_dir=None,
+            n_batches=1,
+        )
     packed_poses = []
     for example_id, rfd3_outputs in results.items():
         for rfd3_output in rfd3_outputs:
