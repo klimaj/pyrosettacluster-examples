@@ -3,6 +3,7 @@ __author__ = "Jason C. Klima"
 
 import argparse
 import os
+import subprocess
 import pyrosetta
 import pyrosetta.distributed.io as io
 
@@ -11,7 +12,7 @@ from pathlib import Path
 from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator
 
-from src.protocols.foundry import rfd3
+from src.protocols.foundry import solublempnn, rfd3
 
 
 def initialize_pyrosetta() -> None:
@@ -24,6 +25,13 @@ def initialize_pyrosetta() -> None:
     pyrosetta.init("-run:constant_seed 1 -multithreading:total_threads 1")
     pyrosetta.secure_unpickle.add_secure_package("pandas")
     pyrosetta.secure_unpickle.add_secure_package("biotite")
+
+
+def download_checkpoints() -> None:
+    subprocess.run(
+        ["foundry", "install", "rfd3", "solublempnn"],
+        check=True,
+    )
 
 
 def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
@@ -65,6 +73,8 @@ def main(
     """Run the PyRosettaCluster example #2 simulation."""
     # Initialize PyRosetta
     initialize_pyrosetta()
+    # Download Foundry checkpoints
+    download_checkpoints()
 
     # Set the number of workers dynamically
     n_workers = os.cpu_count()
@@ -79,7 +89,7 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        protocols = [rfd3]
+        protocols = [rfd3, solublempnn]
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),

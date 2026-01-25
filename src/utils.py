@@ -120,6 +120,21 @@ def get_dataframe(scorefile: Path) -> pd.DataFrame:
     )
 
 
+def pyrosetta_to_torch_seed(pyrosetta_seed: int) -> int:
+    """
+    Scale an input PyRosetta seed to the Torch seed proper range.
+    PyRosetta seed range: [-(2 ** 31), (2 ** 31) - 1]
+    Torch seed range: [0, (2 ** 32) - 1]
+
+    Args:
+        pyrosetta_seed: An `int` object representing the PyRosetta seed.
+
+    Returns:
+        An `int` object representing the Torch seed.
+    """
+    return pyrosetta_seed + (2 ** 31)
+
+
 def atom_array_to_packed_pose(atom_array: "AtomArray") -> PackedPose:
     from biotite.structure.io.pdb import PDBFile
     from io import StringIO
