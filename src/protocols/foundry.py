@@ -65,7 +65,6 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     )
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)
-    model.eval()
     # Run RFD3
     with torch.no_grad(), torch.cuda.amp.autocast(enabled=False):
         results = model.run(
