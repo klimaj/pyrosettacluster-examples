@@ -11,7 +11,7 @@ from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator
 
 from src.protocols.foundry import proteinmpnn, rfd3
-from src.protocols.pyrosetta import proteinmpnn, idealize_poly_gly
+from src.protocols.pyrosetta import idealize_poly_gly
 
 
 def initialize_pyrosetta() -> None:
