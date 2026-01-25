@@ -137,6 +137,7 @@ def solublempnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
 
     from lightning.fabric import seed_everything
     from mpnn.inference_engines.mpnn import MPNNInferenceEngine
+    from foundry.inference_engines.checkpoint_registry import REGISTERED_CHECKPOINTS
 
     protocol_name = kwargs["PyRosettaCluster_protocol_name"]
     protocol_number = kwargs["PyRosettaCluster_protocol_number"]
@@ -162,7 +163,8 @@ def solublempnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     seed_everything(torch_seed)
     # Configure MPNNInferenceEngine
     config = {
-        "model_type": "soluble_mpnn",
+        "model_type": "protein_mpnn",
+        "checkpoint_path": REGISTERED_CHECKPOINTS["solublempnn"].get_default_path(),
         "is_legacy_weights": False,
         "out_directory": None,
         "write_structures": False,
