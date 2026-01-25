@@ -93,7 +93,7 @@ def main(
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
-            input_packed_pose=pyrosetta.pose_from_sequence("TESTMPNN" * 3),
+            input_packed_pose=None,
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,
