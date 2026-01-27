@@ -23,6 +23,7 @@ def main(
     scorefxn: str,
     set_xlim: bool = True,
     set_ylim: bool = True,
+    set_ylim_top: Optional[int] = None,
     y_tick_spacing: int = 3,
     legend_fontsize: Optional[int] = None,
 ) -> None:
@@ -70,7 +71,10 @@ def main(
         ax.set_xlim(left=xmin)
     if set_ylim:
         ymin = np.floor(df[y].min()) - 1
-        ax.set_ylim(bottom=ymin)
+        if isinstance(set_ylim_top, int):
+            ax.set_ylim(bottom=ymin, top=set_ylim_top)
+        else:
+            ax.set_ylim(bottom=ymin)
     # Adjust axes labels
     label_fontsize = 12
     ax.set_xlabel("Heavy Atom RMSD (Å)", fontsize=label_fontsize)
@@ -166,6 +170,7 @@ def main(
         loc="upper left",
         frameon=True,
         fontsize=legend_fontsize,
+        framealpha=1.0,
     )
     # Save
     fig.tight_layout()
@@ -220,6 +225,12 @@ if __name__ == "__main__":
         help="Do not set the y-axis limits.",
     )
     parser.add_argument(
+        "--set_ylim_top",
+        required=False,
+        default=None,
+        help="Optional y-axis limit maximum.",
+    )
+    parser.add_argument(
         "--y_tick_spacing",
         type=int,
         required=False,
@@ -245,6 +256,7 @@ if __name__ == "__main__":
         args.scorefxn,
         set_xlim=args.set_xlim,
         set_ylim=args.set_ylim,
+        set_ylim_top=args.set_ylim_top,
         y_tick_spacing=args.y_tick_spacing,
         legend_fontsize=args.legend_fontsize,
     )
