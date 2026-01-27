@@ -140,3 +140,92 @@ def blueprintbdr(
     src_pose.cache["seed"] = float(seed)
 
     return io.to_packed(src_pose)
+
+
+
+@timeit
+@requires_packed_pose
+def idealize_poly_gly(
+    packed_pose: PackedPose, **kwargs: Any
+) -> Optional[PackedPose]:
+    """
+    A PyRosetta protocol that runs the `BluePrintBDR` mover followed by structure-based scoring.
+
+    Args:
+        packed_pose: A required input `PackedPose` object.
+
+    Keyword Args:
+        PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
+
+    Returns:
+        A `PackedPose` object.
+    """
+    import pyrosetta.distributed.io as io
+    from pyrosetta.rosetta.protocols.rosetta_scripts import XmlObjects
+
+    protocol_name = kwargs["PyRosettaCluster_protocol_name"]
+    protocol_number = kwargs["PyRosettaCluster_protocol_number"]
+    seed = kwargs["PyRosettaCluster_seed"]
+    client_repr = kwargs["PyRosettaCluster_client_repr"]
+    print(
+        "Running --",
+        f"Protocol name: '{protocol_name}';",
+        f"Protocol number: {protocol_number};",
+        f"Protocol seed: {seed};",
+        f"Client: '{client_repr}';",
+        sep=" ",
+    )
+    # Run RosettaScripts
+    xml_obj = XmlObjects.create_from_string(
+        """
+        <ROSETTASCRIPTS>
+            <SCOREFXNS>
+                <ScoreFunction name="beta_cart" weights="beta_jan25_cart">
+                    <Reweight scoretype="coordinate_constraint" weight="1.0"/>
+                </ScoreFunction>
+            </SCOREFXNS>
+            <MOVE_MAP_FACTORIES>
+                <MoveMapFactory name="mmf" bb="1" chi="0" nu="0" branches="0" cartesian="1" jumps="0"/>
+            </MOVE_MAP_FACTORIES>
+            <MOVERS>
+                <MakePolyX name="make_poly_gly"
+                    aa="GLY"
+                    keep_pro="0"
+                    keep_gly="0"
+                    keep_disulfide_cys="0"/>
+                <VirtualRoot name="add_virtual_root" removable="1" remove="0"/>
+                <VirtualRoot name="rm_virtual_root" removable="1" remove="1"/>
+                <AddConstraints name="add_csts">
+                    <CoordinateConstraintGenerator name="coord_cst"
+                        sd="0.1"
+                        bounded="0"
+                        bounded_width="0.0"
+                        sidechain="0"
+                        ca_only="1"
+                        ambiguous_hnq="0"
+                        native="0"
+                        align_reference="0"/>
+                </AddConstraints>
+                <RemoveConstraints name="rm_csts" constraint_generators="coord_cst"/>
+                <MinMover name="min"
+                        scorefxn="beta_cart"
+                        max_iter="200"
+                        type="lbfgs_armijo_nonmonotone"
+                        tolerance="0.01"
+                        movemap_factory="mmf"/>
+            </MOVERS>
+            <PROTOCOLS>
+                <Add mover="make_poly_gly"/>
+                <Add mover="add_virtual_root"/>
+                <Add mover="add_csts"/>
+                <Add mover="min"/>
+                <Add mover="rm_csts"/>
+                <Add mover="rm_virtual_root"/>
+            </PROTOCOLS>
+        </ROSETTASCRIPTS>
+        """
+    ).get_mover("ParsedProtocol")
+    pose = packed_pose.pose
+    xml_obj.apply(pose)
+
+    return io.to_packed(pose)
