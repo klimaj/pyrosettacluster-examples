@@ -101,7 +101,7 @@ def main(
             decoy_ids=[0] * len(protocols),
             project_name="pyrosettacluster-examples",
             simulation_name="example-2",
-            simulation_records_in_scorefile=False,
+            simulation_records_in_scorefile=True,
             filter_results=True,
             output_init_file=None,
             compression=True,
