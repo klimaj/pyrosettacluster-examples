@@ -1,0 +1,19 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+        <ScoreFunction name="beta_cart" weights="beta_jan25_cart"/>
+    </SCOREFXNS>
+    <MOVE_MAP_FACTORIES>
+        <MoveMapFactory name="mmf" bb="1" chi="1" nu="0" branches="0" cartesian="1" jumps="0"/>
+    </MOVE_MAP_FACTORIES>
+    <MOVERS>
+        <MinMover name="min"
+            scorefxn="beta_cart"
+            max_iter="500"
+            type="lbfgs_armijo_nonmonotone"
+            tolerance="0.0001"
+            movemap_factory="mmf"/>
+    </MOVERS>
+    <PROTOCOLS>
+        <Add mover="min"/>
+    </PROTOCOLS>
+</ROSETTASCRIPTS>
