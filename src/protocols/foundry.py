@@ -236,13 +236,13 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         devices_per_node=1,
         verbose=True,
     )
-    # Dump temporary .cif file
+    # Dump temporary .pdb file
     tmp_path = Path(kwargs["PyRosettaCluster_tmp_path"])
-    tmp_cif_file = tmp_path / "tmp.cif"
-    io.dump_cif(packed_pose, str(tmp_cif_file))
-    # Set RF3 inference inputs
+    tmp_pdb_file = tmp_path / "tmp.pdb"
+    io.dump_pdb(packed_pose, str(tmp_pdb_file))
+    # Setup RF3 inference inputs
     inputs = InferenceInput.from_cif_path(
-        path=tmp_cif_file,
+        path=tmp_pdb_file,
         example_id=None,
         template_selection=None,
         ground_truth_conformer_selection=None,
