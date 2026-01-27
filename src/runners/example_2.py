@@ -89,19 +89,17 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        protocols = [rf3] # [rfd3, idealize_poly_gly, proteinmpnn, rf3]
+        protocols = [rfd3, idealize_poly_gly, proteinmpnn, rf3]
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
-            input_packed_pose=pyrosetta.pose_from_sequence("NLYIQWLKDGGPSSGRPPPS"),
+            input_packed_pose=None, # pyrosetta.pose_from_sequence("NLYIQWLKDGGPSSGRPPPS"),
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,
-            seeds=[111] * len(protocols),
-            decoy_ids=[0] * len(protocols),
             project_name="pyrosettacluster-examples",
             simulation_name="example-2",
-            simulation_records_in_scorefile=True,
+            simulation_records_in_scorefile=False,
             filter_results=True,
             output_init_file=None,
             compression=True,

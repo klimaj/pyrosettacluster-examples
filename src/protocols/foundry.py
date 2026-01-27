@@ -165,7 +165,6 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         output_dict = mpnn_output.output_dict
         packed_pose = atom_array_to_packed_pose(atom_array)
         packed_pose = packed_pose.update_scores(
-            mpnn_atom_array=atom_array,
             mpnn_input_dict=input_dict,
             mpnn_output_dict=output_dict,
         )
@@ -223,7 +222,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     # Initialize RF3 inference engine
     engine = RF3InferenceEngine(
         n_recycles=5,
-        diffusion_batch_size=3,
+        diffusion_batch_size=5,
         num_steps=50,
         template_noise_scale=1e-5,
         raise_if_missing_msa_for_protein_of_length_n=None,
@@ -273,19 +272,18 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
             sample_idx =rf3_output.sample_idx
             seed = rf3_output.seed
             packed_pose = atom_array_to_packed_pose(atom_array)
+            packed_pose = packed_pose.update_scores(
+                rf3_example_id=rf3_output.example_id,
+                rf3_summary_confidences=rf3_output.summary_confidences,
+                rf3_confidences=rf3_output.confidences,
+                f3_sample_idx =rf3_output.sample_idx,
+                rf3_seed = rf3_output.seed,
+            )
             packed_poses.append(packed_pose)
             print(f"RF3 output {i}:", example_id)
-            print(f"RF3 output {i}:", atom_array)
             print(f"RF3 output {i}:", summary_confidences)
             print(f"RF3 output {i}:", confidences)
             print(f"RF3 output {i}:", sample_idx)
             print(f"RF3 output {i}:", seed)
-
-    print("Num results:", len(packed_poses))
-
-    for packed_pose in packed_poses:
-        print(packed_pose.pose.sequence())
-        print(packed_pose.pose)
-        print(packed_pose.pose.empty())
 
     return packed_poses
