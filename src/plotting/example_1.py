@@ -23,7 +23,7 @@ def main(
     scorefxn: str,
     set_xlim: bool = True,
     set_ylim: bool = True,
-    set_ylim_top: Optional[int] = None,
+    set_ylim_top: Optional[float] = None,
     y_tick_spacing: int = 3,
     legend_fontsize: Optional[int] = None,
 ) -> None:
@@ -71,7 +71,7 @@ def main(
         ax.set_xlim(left=xmin)
     if set_ylim:
         ymin = np.floor(df[y].min()) - 1
-        if isinstance(set_ylim_top, int):
+        if isinstance(set_ylim_top, float):
             ax.set_ylim(bottom=ymin, top=set_ylim_top)
         else:
             ax.set_ylim(bottom=ymin)
@@ -226,6 +226,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--set_ylim_top",
+        type=float,
         required=False,
         default=None,
         help="Optional y-axis limit maximum.",
