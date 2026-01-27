@@ -10,7 +10,7 @@ from dask.distributed import Client, LocalCluster
 from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator
 
-from src.protocols.foundry import proteinmpnn, rfd3
+from src.protocols.foundry import proteinmpnn, rf3, rfd3
 from src.protocols.pyrosetta import idealize_poly_gly
 
 
@@ -89,11 +89,11 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        protocols = [rfd3, idealize_poly_gly, proteinmpnn]
+        protocols = [rf3] # [rfd3, idealize_poly_gly, proteinmpnn, rf3]
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
-            input_packed_pose=None,
+            input_packed_pose=pyrosetta.pose_from_sequence("NLYIQWLKDGGPSSGRPPPS"),
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,
