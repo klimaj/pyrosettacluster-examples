@@ -61,7 +61,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         specification={
             "length": 20,
         },
-        diffusion_batch_size=1,
+        diffusion_batch_size=2,
     )
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)
@@ -83,6 +83,8 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
                 rfd3_output_metadata=metadata,
             )
             packed_poses.append(packed_pose)
+
+    print(f"RFD3 protocol is returning {len(packed_poses)} PackedPose objects!")
 
     return packed_poses
 
@@ -173,6 +175,8 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         print(f"MPNN result {i} output_dict:", output_dict)
         packed_poses.append(packed_pose)
 
+    print(f"ProteinMPNN protocol is returning {len(packed_poses)} PackedPose objects!")
+
     return packed_poses
 
 
@@ -209,7 +213,6 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     pyrosetta.secure_unpickle.add_secure_package("pandas")
     pyrosetta.secure_unpickle.add_secure_package("biotite")
 
-    from io import StringIO
     from lightning.fabric import seed_everything
     from rf3.inference_engines.rf3 import RF3InferenceEngine
     from rf3.utils.inference import InferenceInput
@@ -222,7 +225,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     # Initialize RF3 inference engine
     engine = RF3InferenceEngine(
         n_recycles=5,
-        diffusion_batch_size=5,
+        diffusion_batch_size=3,
         num_steps=50,
         template_noise_scale=1e-5,
         raise_if_missing_msa_for_protein_of_length_n=None,
@@ -285,5 +288,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
             print(f"RF3 output {i}:", confidences)
             print(f"RF3 output {i}:", sample_idx)
             print(f"RF3 output {i}:", seed)
+
+    print(f"RF3 protocol is returning {len(packed_poses)} PackedPose objects!")
 
     return packed_poses

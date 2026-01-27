@@ -77,13 +77,13 @@ def main(
     download_checkpoints()
 
     # Set the number of workers dynamically
-    n_workers = os.cpu_count()
+    n_workers = 1 # os.cpu_count()
     print(f"Spinning up {n_workers} dask workers.")
 
     # Run the simulation
     with LocalCluster(
         n_workers=n_workers,
-        threads_per_worker=2,
+        threads_per_worker=1,
         memory_limit=f"{12.7 / n_workers:.2f}GB",
         scheduler_port=8786,
         dashboard_address=":8787",
