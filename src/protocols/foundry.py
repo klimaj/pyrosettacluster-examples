@@ -236,15 +236,18 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         devices_per_node=1,
         verbose=True,
     )
-
-    # Create input from the MPNN-designed structure (first design)
-    # This re-folds the sequence to validate it adopts the intended structure
+    # Dump temporary .cif file
+    tmp_path = Path(kwargs["PyRosettaCluster_tmp_path"])
+    tmp_cif_file = tmp_path / "tmp.cif"
+    io.dump_cif(packed_pose, str(tmp_cif_file))
+    # Set RF3 inference inputs
     inputs = InferenceInput.from_cif_path(
-        path=StringIO(io.to_pdbstring(packed_pose)),
+        path=tmp_cif_file,
         example_id=None,
         template_selection=None,
         ground_truth_conformer_selection=None,
     )
+    # Run RF3 inference
     with torch.no_grad(), torch.amp.autocast("cuda", enabled=False):
         results = engine.run(
             inputs=inputs,
