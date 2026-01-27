@@ -239,7 +239,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--legend_fontsize",
-        type=int,
+        type=float,
         required=False,
         default=None,
         help="Set the legend fontsize.",
