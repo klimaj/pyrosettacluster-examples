@@ -283,4 +283,9 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
 
     print("Num results:", len(packed_poses))
 
+    for packed_pose in packed_poses:
+        print(packed_pose.pose.sequence())
+        print(packed_pose.pose)
+        print(packed_pose.pose.empty())
+
     return packed_poses
