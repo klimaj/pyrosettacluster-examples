@@ -136,6 +136,16 @@ def pyrosetta_to_torch_seed(pyrosetta_seed: int) -> int:
 
 
 def atom_array_to_packed_pose(atom_array: "AtomArray") -> PackedPose:
+    """
+    Convert a biotite `AtomArray` object to a PyRosetta `PackedPose`
+    object in memory.
+
+    Args:
+        atom_array: A biotite `AtomArray` object.
+
+    Returns:
+        A `PackedPose` object.
+    """
     from biotite.structure.io.pdb import PDBFile
     from io import StringIO
 
@@ -147,3 +157,35 @@ def atom_array_to_packed_pose(atom_array: "AtomArray") -> PackedPose:
     packed_pose = io.pose_from_pdbstring(pdbstring)
 
     return packed_pose
+
+
+def print_protocol_info(**kwargs: Any) -> None:
+    """
+    Print user-provided PyRosetta protocol and CUDA info during runtime.
+
+    Keyword Args:
+        PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
+
+    Returns:
+        None
+    """
+    import torch
+
+    protocol_name = kwargs["PyRosettaCluster_protocol_name"]
+    protocol_number = kwargs["PyRosettaCluster_protocol_number"]
+    seed = kwargs["PyRosettaCluster_seed"]
+    client_repr = kwargs["PyRosettaCluster_client_repr"]
+    cuda_is_available = torch.cuda.is_available()
+    cuda_device_count = torch.cuda.device_count()
+    cuda_device_name = torch.cuda.get_device_name(0) if cuda_is_available else None
+    print(
+        "Running --",
+        f"Protocol name: '{protocol_name}';",
+        f"Protocol number: {protocol_number};",
+        f"Protocol seed: {seed};",
+        f"Client: '{client_repr}';",
+        f"CUDA is available: {cuda_is_available};",
+        f"CUDA device count: {cuda_device_count};",
+        f"CUDA device name: {cuda_device_name};",
+        sep=" ",
+    )

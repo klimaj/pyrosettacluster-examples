@@ -29,7 +29,7 @@ def initialize_pyrosetta() -> None:
 def download_checkpoints() -> None:
     """Download Foundry model weights"""
     subprocess.run(
-        ["foundry", "install", "rfd3", "proteinmpnn"],
+        ["foundry", "install", "rfd3", "proteinmpnn", "rf3"],
         check=True,
     )
 

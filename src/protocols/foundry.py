@@ -1,8 +1,6 @@
 __author__ = "Jason C. Klima"
 
 
-import pyrosetta.distributed.io as io
-
 from pathlib import Path
 from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
@@ -10,6 +8,7 @@ from typing import Any, Optional
 
 from src.utils import (
     atom_array_to_packed_pose,
+    print_protocol_info,
     pyrosetta_to_torch_seed,
     timeit,
 )
@@ -53,27 +52,10 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         raise ValueError(
             f"The 'packed_pose' argument parameter must be `None`. Received: {type(packed_pose)}"
         )
-
-    protocol_name = kwargs["PyRosettaCluster_protocol_name"]
-    protocol_number = kwargs["PyRosettaCluster_protocol_number"]
-    seed = kwargs["PyRosettaCluster_seed"]
-    client_repr = kwargs["PyRosettaCluster_client_repr"]
-    cuda_is_available = torch.cuda.is_available()
-    cuda_device_count = torch.cuda.device_count()
-    cuda_device_name = torch.cuda.get_device_name(0) if cuda_is_available else None
-    print(
-        "Running --",
-        f"Protocol name: '{protocol_name}';",
-        f"Protocol number: {protocol_number};",
-        f"Protocol seed: {seed};",
-        f"Client: '{client_repr}';",
-        f"CUDA is available: {cuda_is_available};",
-        f"CUDA device count: {cuda_device_count};",
-        f"CUDA device name: {cuda_device_name};",
-        sep=" ",
-    )
+    # Print runtime info
+    print_protocol_info(**kwargs)
     # Setup seed
-    seed_everything(pyrosetta_to_torch_seed(seed))
+    seed_everything(pyrosetta_to_torch_seed(kwargs["PyRosettaCluster_seed"]))
     # Configure RFD3
     config = RFD3InferenceConfig(
         specification={
@@ -109,7 +91,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
 @requires_packed_pose
 def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     """
-    A PyRosetta protocol that runs the ProteinMPNN.
+    A PyRosetta protocol that runs ProteinMPNN.
 
     Args:
         packed_pose: A required input `PackedPose` object.
@@ -118,7 +100,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
-        A `PackedPose` object.
+        A list of `PackedPose` objects.
     """
     import os
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
@@ -134,32 +116,17 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     torch.backends.cudnn.allow_tf32 = False
 
     import pyrosetta
+    import pyrosetta.distributed.io as io
     pyrosetta.secure_unpickle.add_secure_package("pandas")
     pyrosetta.secure_unpickle.add_secure_package("biotite")
 
     from lightning.fabric import seed_everything
     from mpnn.inference_engines.mpnn import MPNNInferenceEngine
 
-    protocol_name = kwargs["PyRosettaCluster_protocol_name"]
-    protocol_number = kwargs["PyRosettaCluster_protocol_number"]
-    seed = kwargs["PyRosettaCluster_seed"]
-    client_repr = kwargs["PyRosettaCluster_client_repr"]
-    cuda_is_available = torch.cuda.is_available()
-    cuda_device_count = torch.cuda.device_count()
-    cuda_device_name = torch.cuda.get_device_name(0) if cuda_is_available else None
-    print(
-        "Running --",
-        f"Protocol name: '{protocol_name}';",
-        f"Protocol number: {protocol_number};",
-        f"Protocol seed: {seed};",
-        f"Client: '{client_repr}';",
-        f"CUDA is available: {cuda_is_available};",
-        f"CUDA device count: {cuda_device_count};",
-        f"CUDA device name: {cuda_device_name};",
-        sep=" ",
-    )
+    # Print runtime info
+    print_protocol_info(**kwargs)
     # Setup seed
-    torch_seed = pyrosetta_to_torch_seed(seed)
+    torch_seed = pyrosetta_to_torch_seed(kwargs["PyRosettaCluster_seed"])
     seed_everything(torch_seed)
     # Configure MPNNInferenceEngine
     config = {
@@ -206,5 +173,109 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         print(f"MPNN result {i} input_dict:", input_dict)
         print(f"MPNN result {i} output_dict:", output_dict)
         packed_poses.append(packed_pose)
+
+    return packed_poses
+
+
+@timeit
+@requires_packed_pose
+def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
+    """
+    A PyRosetta protocol that runs RoseTTAFold-3.
+
+    Args:
+        packed_pose: A required input `PackedPose` object.
+
+    Keyword Args:
+        PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
+
+    Returns:
+        A list of `PackedPose` object.
+    """
+    import os
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+    os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
+    # Disable GPU for determinism
+    # os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+    import torch
+    torch.use_deterministic_algorithms(True, warn_only=True)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+
+    import pyrosetta
+    import pyrosetta.distributed.io as io
+    pyrosetta.secure_unpickle.add_secure_package("pandas")
+    pyrosetta.secure_unpickle.add_secure_package("biotite")
+
+    from io import StringIO
+    from lightning.fabric import seed_everything
+    from rf3.inference_engines.rf3 import RF3InferenceEngine
+    from rf3.utils.inference import InferenceInput
+
+    # Print runtime info
+    print_protocol_info(**kwargs)
+    # Setup seed
+    torch_seed = pyrosetta_to_torch_seed(kwargs["PyRosettaCluster_seed"])
+    seed_everything(torch_seed)
+    # Initialize RF3 inference engine
+    engine = RF3InferenceEngine(
+        n_recycles=5,
+        diffusion_batch_size=5,
+        num_steps=50,
+        template_noise_scale=1e-5,
+        raise_if_missing_msa_for_protein_of_length_n=None,
+        compress_outputs=False,
+        early_stopping_plddt_threshold=None,
+        metrics_cfg="default",
+        ckpt_path="rf3",
+        seed=torch_seed,
+        num_nodes=1,
+        devices_per_node=1,
+        verbose=True,
+    )
+
+    # Create input from the MPNN-designed structure (first design)
+    # This re-folds the sequence to validate it adopts the intended structure
+    inputs = InferenceInput.from_cif_path(
+        path=StringIO(io.to_pdbstring(packed_pose)),
+        example_id=None,
+        template_selection=None,
+        ground_truth_conformer_selection=None,
+    )
+    with torch.no_grad(), torch.amp.autocast("cuda", enabled=False):
+        results = engine.run(
+            inputs=inputs,
+            out_dir=None,
+            dump_predictions=False,
+            dump_trajectories=False,
+            one_model_per_file=True,
+            annotate_b_factor_with_plddt=True,
+            sharding_pattern=None,
+            skip_existing=False,
+            template_selection=None,
+            ground_truth_conformer_selection=None,
+            cyclic_chains=[],
+        )
+    packed_poses = []
+    for _example_id, rf3_outputs in results.items():
+        print("Example ID:", _example_id)
+        for i, rf3_output in enumerate(rf3_outputs):
+            example_id = rf3_output.example_id
+            atom_array = rf3_output.atom_array
+            summary_confidences = rf3_output.summary_confidences
+            confidences = rf3_output.confidences
+            sample_idx =rf3_output.sample_idx
+            seed = rf3_output.seed
+            packed_pose = atom_array_to_packed_pose(atom_array)
+            print(f"RF3 output {i}:", example_id)
+            print(f"RF3 output {i}:", atom_array)
+            print(f"RF3 output {i}:", summary_confidences)
+            print(f"RF3 output {i}:", confidences)
+            print(f"RF3 output {i}:", sample_idx)
+            print(f"RF3 output {i}:", seed)
+            packed_poses.append(packed_pose)
 
     return packed_poses
