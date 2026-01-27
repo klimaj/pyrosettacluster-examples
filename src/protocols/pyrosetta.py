@@ -1,12 +1,14 @@
 __author__ = "Jason C. Klima"
 
 
+from pathlib import Path
 from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
 from typing import Any, Dict, Optional, Tuple
 
 from src.utils import (
     timeit,
+    print_protocol_info,
     write_blueprint,
     write_resfile,
 )
@@ -142,14 +144,36 @@ def blueprintbdr(
     return io.to_packed(src_pose)
 
 
+def run_xml_file(packed_pose: PackedPose, xml_file: Path) -> PackedPose:
+    """
+    The the provided RosettaScripts XML file on the provided `PackedPose` object.
+
+    Args:
+        packed_pose: A required input `PackedPose` object.
+        xml_file: A required RosettaScripts XML file path or `Path` object.
+
+    Returns:
+        A `PackedPose` object.
+    """
+    import pyrosetta.distributed.io as io
+
+    from pyrosetta.rosetta.protocols.rosetta_scripts import XmlObjects
+
+    xml_obj = XmlObjects.create_from_file(str(xml_file)).get_mover("ParsedProtocol")
+    pose = packed_pose.pose
+    xml_obj.apply(pose)
+
+    return io.to_packed(pose)
+
 
 @timeit
 @requires_packed_pose
 def idealize_poly_gly(
     packed_pose: PackedPose, **kwargs: Any
-) -> Optional[PackedPose]:
+) -> PackedPose:
     """
-    A PyRosetta protocol that runs the `BluePrintBDR` mover followed by structure-based scoring.
+    A PyRosetta protocol that converts the input `PackedPose` object to poly-glycine,
+    and minimizes with C-alpha coordinate constraints.
 
     Args:
         packed_pose: A required input `PackedPose` object.
@@ -160,72 +184,76 @@ def idealize_poly_gly(
     Returns:
         A `PackedPose` object.
     """
-    import pyrosetta.distributed.io as io
-    from pyrosetta.rosetta.protocols.rosetta_scripts import XmlObjects
+    from pathlib import Path
 
-    protocol_name = kwargs["PyRosettaCluster_protocol_name"]
-    protocol_number = kwargs["PyRosettaCluster_protocol_number"]
-    seed = kwargs["PyRosettaCluster_seed"]
-    client_repr = kwargs["PyRosettaCluster_client_repr"]
-    print(
-        "Running --",
-        f"Protocol name: '{protocol_name}';",
-        f"Protocol number: {protocol_number};",
-        f"Protocol seed: {seed};",
-        f"Client: '{client_repr}';",
-        sep=" ",
-    )
+    # Print runtime info
+    print_protocol_info(**kwargs)
     # Run RosettaScripts
-    xml_obj = XmlObjects.create_from_string(
-        """
-        <ROSETTASCRIPTS>
-            <SCOREFXNS>
-                <ScoreFunction name="beta_cart" weights="beta_jan25_cart">
-                    <Reweight scoretype="coordinate_constraint" weight="1.0"/>
-                </ScoreFunction>
-            </SCOREFXNS>
-            <MOVE_MAP_FACTORIES>
-                <MoveMapFactory name="mmf" bb="1" chi="0" nu="0" branches="0" cartesian="1" jumps="0"/>
-            </MOVE_MAP_FACTORIES>
-            <MOVERS>
-                <MakePolyX name="make_poly_gly"
-                    aa="GLY"
-                    keep_pro="0"
-                    keep_gly="0"
-                    keep_disulfide_cys="0"/>
-                <VirtualRoot name="add_virtual_root" removable="1" remove="0"/>
-                <VirtualRoot name="rm_virtual_root" removable="1" remove="1"/>
-                <AddConstraints name="add_csts">
-                    <CoordinateConstraintGenerator name="coord_cst"
-                        sd="0.1"
-                        bounded="0"
-                        bounded_width="0.0"
-                        sidechain="0"
-                        ca_only="1"
-                        ambiguous_hnq="0"
-                        native="0"
-                        align_reference="0"/>
-                </AddConstraints>
-                <RemoveConstraints name="rm_csts" constraint_generators="coord_cst"/>
-                <MinMover name="min"
-                        scorefxn="beta_cart"
-                        max_iter="200"
-                        type="lbfgs_armijo_nonmonotone"
-                        tolerance="0.01"
-                        movemap_factory="mmf"/>
-            </MOVERS>
-            <PROTOCOLS>
-                <Add mover="make_poly_gly"/>
-                <Add mover="add_virtual_root"/>
-                <Add mover="add_csts"/>
-                <Add mover="min"/>
-                <Add mover="rm_csts"/>
-                <Add mover="rm_virtual_root"/>
-            </PROTOCOLS>
-        </ROSETTASCRIPTS>
-        """
-    ).get_mover("ParsedProtocol")
-    pose = packed_pose.pose
-    xml_obj.apply(pose)
+    xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "idealize_poly_gly.xml"
 
-    return io.to_packed(pose)
+    return run_xml_file(packed_pose, xml_file)
+
+
+@timeit
+@requires_packed_pose
+def minimize(
+    packed_pose: PackedPose, **kwargs: Any
+) -> PackedPose:
+    """
+    A PyRosetta protocol that performs Cartesian minimization on the input `PackedPose` object.
+
+    Args:
+        packed_pose: A required input `PackedPose` object.
+
+    Keyword Args:
+        PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
+
+    Returns:
+        A `PackedPose` object.
+    """
+    from pathlib import Path
+
+    # Print runtime info
+    print_protocol_info(**kwargs)
+    # Run RosettaScripts
+    xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "minimize.xml"
+
+    return run_xml_file(packed_pose, xml_file)
+
+
+@timeit
+@requires_packed_pose
+def compute_rmsd(
+    packed_pose: PackedPose, **kwargs: Any
+) -> PackedPose:
+    """
+    A PyRosetta protocol that performs C-alpha superposition and computes the
+    backbone heavy atom RMSD between the input `PackedPose` and a `PackedPose`
+    object cached in the "mpnn_packed_pose" `Pose.cache` dictionary key value.
+
+    Args:
+        packed_pose: A required input `PackedPose` object.
+
+    Keyword Args:
+        PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
+
+    Returns:
+        A `PackedPose` object.
+    """
+    import pyrosetta
+
+    # Print runtime info
+    print_protocol_info(**kwargs)
+    # Setup protocol
+    src_pose = packed_pose.pose
+    ref_pose = packed_pose.pose.cache["mpnn_packed_pose"].pose
+    # Superimpose input onto reference
+    superimpose_mover = pyrosetta.rosetta.protocols.simple_moves.SuperimposeMover()
+    superimpose_mover.set_ca_only(True)
+    superimpose_mover.set_reference_pose(ref_pose)
+    superimpose_mover.set_target_range(start=1, end=ref_pose.size())
+    superimpose_mover.apply(src_pose)
+    # Compute RMSD
+    bb_scrmsd = pyrosetta.rosetta.core.scoring.bb_rmsd_including_O(src_pose, ref_pose)
+
+    return packed_pose.update_scores(bb_scrmsd=bb_scrmsd)

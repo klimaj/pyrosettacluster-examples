@@ -4,7 +4,7 @@ __author__ = "Jason C. Klima"
 from pathlib import Path
 from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from src.utils import (
     atom_array_to_packed_pose,
@@ -15,9 +15,9 @@ from src.utils import (
 
 
 @timeit
-def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
+def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     """
-    A PyRosetta protocol that runs the RFdiffusion-3. 
+    A PyRosetta protocol that runs RFdiffusion-3.
 
     Args:
         packed_pose: A required `None` object.
@@ -59,9 +59,9 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     # Configure RFD3
     config = RFD3InferenceConfig(
         specification={
-            "length": 20,
+            "length": kwargs["rfd3_length"],
         },
-        diffusion_batch_size=2,
+        diffusion_batch_size=kwargs["rfd3_diffusion_batch_size"],
     )
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)
@@ -75,23 +75,18 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     packed_poses = []
     for _example_id, rfd3_outputs in results.items():
         for rfd3_output in rfd3_outputs:
-            atom_array = rfd3_output.atom_array
-            metadata = rfd3_output.metadata
-            packed_pose = atom_array_to_packed_pose(atom_array)
+            packed_pose = atom_array_to_packed_pose(rfd3_output.atom_array)
             packed_pose = packed_pose.update_scores(
-                # rdf3_atom_array=atom_array,
-                rfd3_output_metadata=metadata,
+                rfd3_output_metadata=rfd3_output.metadata,
             )
             packed_poses.append(packed_pose)
-
-    print(f"RFD3 protocol is returning {len(packed_poses)} PackedPose objects!")
 
     return packed_poses
 
 
 @timeit
 @requires_packed_pose
-def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
+def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     """
     A PyRosetta protocol that runs ProteinMPNN.
 
@@ -144,9 +139,9 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     input_dicts = [
         {
             "structure_path": str(structure_path),
-            "batch_size": 4,
-            "number_of_batches": 1,
-            "temperature": 0.1,
+            "batch_size": kwargs["mpnn_batch_size"],
+            "number_of_batches": kwargs["mpnn_number_of_batches"],
+            "temperature": kwargs["mpnn_temperature"],
             "omit": ["CYS", "UNK"],
             "structure_noise": 0.0,
             "decode_type": "auto_regressive",
@@ -161,28 +156,21 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
         results = model.run(input_dicts=input_dicts)
     # Parse results
     packed_poses = []
-    for i, mpnn_output in enumerate(results):
-        atom_array = mpnn_output.atom_array
-        input_dict = mpnn_output.input_dict
-        output_dict = mpnn_output.output_dict
-        packed_pose = atom_array_to_packed_pose(atom_array)
+    for mpnn_output in results:
+        packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
         packed_pose = packed_pose.update_scores(
-            mpnn_input_dict=input_dict,
-            mpnn_output_dict=output_dict,
+            mpnn_input_dict=mpnn_output.input_dict,
+            mpnn_output_dict=mpnn_output.output_dict,
+            mpnn_packed_pose=packed_pose,
         )
-        print(f"MPNN result {i} sequence:", packed_pose.pose.sequence())
-        print(f"MPNN result {i} input_dict:", input_dict)
-        print(f"MPNN result {i} output_dict:", output_dict)
         packed_poses.append(packed_pose)
-
-    print(f"ProteinMPNN protocol is returning {len(packed_poses)} PackedPose objects!")
 
     return packed_poses
 
 
 @timeit
 @requires_packed_pose
-def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
+def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     """
     A PyRosetta protocol that runs RoseTTAFold-3.
 
@@ -211,7 +199,6 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     import pyrosetta
     import pyrosetta.distributed.io as io
     pyrosetta.secure_unpickle.add_secure_package("pandas")
-    pyrosetta.secure_unpickle.add_secure_package("biotite")
 
     from lightning.fabric import seed_everything
     from rf3.inference_engines.rf3 import RF3InferenceEngine
@@ -224,9 +211,9 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     seed_everything(torch_seed)
     # Initialize RF3 inference engine
     engine = RF3InferenceEngine(
-        n_recycles=5,
-        diffusion_batch_size=3,
-        num_steps=50,
+        n_recycles=kwargs["rf3_n_recycles"],
+        diffusion_batch_size=kwargs["rf3_diffusion_batch_size"],
+        num_steps=kwargs["rf3_num_steps"],
         template_noise_scale=1e-5,
         raise_if_missing_msa_for_protein_of_length_n=None,
         compress_outputs=False,
@@ -243,9 +230,10 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
     tmp_pdb_file = tmp_path / "tmp.pdb"
     io.dump_pdb(packed_pose, str(tmp_pdb_file))
     # Setup RF3 inference inputs
+    example_id = "rf3_example_id"
     inputs = InferenceInput.from_cif_path(
         path=tmp_pdb_file,
-        example_id=None,
+        example_id=example_id,
         template_selection=None,
         ground_truth_conformer_selection=None,
     )
@@ -264,31 +252,13 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> Optional[PackedPose]:
             ground_truth_conformer_selection=None,
             cyclic_chains=[],
         )
-    packed_poses = []
-    for _example_id, rf3_outputs in results.items():
-        print("Example ID:", _example_id)
-        for i, rf3_output in enumerate(rf3_outputs):
-            example_id = rf3_output.example_id
-            atom_array = rf3_output.atom_array
-            summary_confidences = rf3_output.summary_confidences
-            confidences = rf3_output.confidences
-            sample_idx =rf3_output.sample_idx
-            seed = rf3_output.seed
-            packed_pose = atom_array_to_packed_pose(atom_array)
-            packed_pose = packed_pose.update_scores(
-                rf3_example_id=rf3_output.example_id,
-                rf3_summary_confidences=rf3_output.summary_confidences,
-                rf3_confidences=rf3_output.confidences,
-                f3_sample_idx =rf3_output.sample_idx,
-                rf3_seed = rf3_output.seed,
-            )
-            packed_poses.append(packed_pose)
-            print(f"RF3 output {i}:", example_id)
-            print(f"RF3 output {i}:", summary_confidences)
-            print(f"RF3 output {i}:", confidences)
-            print(f"RF3 output {i}:", sample_idx)
-            print(f"RF3 output {i}:", seed)
+    rf3_output = results[example_id][0] # Top ranked prediction
+    packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
 
-    print(f"RF3 protocol is returning {len(packed_poses)} PackedPose objects!")
-
-    return packed_poses
+    return packed_pose.update_scores(
+        {f"rf3_{k}": v for k, v in rf3_output.confidences.items()},
+        {f"rf3_{k}": v for k, v in rf3_output.summary_confidences.items()},
+        rf3_example_id=rf3_output.example_id,
+        rf3_sample_idx =rf3_output.sample_idx,
+        rf3_seed = rf3_output.seed,
+    )

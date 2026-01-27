@@ -2,7 +2,6 @@ __author__ = "Jason C. Klima"
 
 
 import argparse
-import os
 import subprocess
 import pyrosetta
 
@@ -11,7 +10,7 @@ from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator
 
 from src.protocols.foundry import proteinmpnn, rf3, rfd3
-from src.protocols.pyrosetta import idealize_poly_gly
+from src.protocols.pyrosetta import compute_rmsd, idealize_poly_gly, minimize
 
 
 def initialize_pyrosetta() -> None:
@@ -62,6 +61,17 @@ def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
                 "connect_info_cutoff": "3.0",
             },
             "set_logging_handler": "logging",
+            # RFdiffusion-3 parameters
+            "rfd3_length": "20-30",
+            "rfd3_diffusion_batch_size": 2,
+            # ProteinMPNN parameters
+            "mpnn_temperature": 0.1,
+            "mpnn_batch_size": 2,
+            "mpnn_number_of_batches": 1,
+            # RoseTTAFold-3 parameters
+            "rf3_diffusion_batch_size": 2,
+            "rf3_n_recycles": 5,
+            "rf3_num_steps": 50,
         }
 
 
@@ -77,7 +87,7 @@ def main(
     download_checkpoints()
 
     # Set the number of workers dynamically
-    n_workers = 1 # os.cpu_count()
+    n_workers = 1
     print(f"Spinning up {n_workers} dask workers.")
 
     # Run the simulation
@@ -89,7 +99,7 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        protocols = [rfd3, idealize_poly_gly, proteinmpnn, rf3]
+        protocols = [rfd3, idealize_poly_gly, proteinmpnn, rf3, minimize, compute_rmsd]
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
