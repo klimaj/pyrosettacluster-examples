@@ -167,7 +167,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
 
     kwargs["mpnn_packed_pose"] = packed_pose
 
-    return packed_poses, kwargs
+    return [kwargs, *packed_poses]
 
 
 
