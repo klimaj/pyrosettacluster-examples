@@ -157,15 +157,18 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     # Parse results
     packed_poses = []
     for mpnn_output in results:
-        packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
-        packed_pose = packed_pose.update_scores(
+        output_packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
+        output_packed_pose = mpnn_packed_pose.update_scores(
             mpnn_input_dict=mpnn_output.input_dict,
             mpnn_output_dict=mpnn_output.output_dict,
             mpnn_packed_pose=packed_pose,
         )
-        packed_poses.append(packed_pose)
+        packed_poses.append(output_packed_pose)
 
-    return packed_poses
+    kwargs["mpnn_packed_pose"] = packed_pose
+
+    return packed_poses, kwargs
+
 
 
 @timeit
@@ -255,7 +258,10 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     rf3_output = results[example_id][0] # Top ranked prediction
     rf3_packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
 
-    return rf3_packed_pose.update_scores(
+    print(rf3_packed_pose.pose.cache)
+    print(kwargs)
+
+    rf3_packed_pose = rf3_packed_pose.update_scores(
         packed_pose.pose.cache, # Propagate protocol scores
         {f"rf3_{k}": v for k, v in rf3_output.confidences.items()},
         {f"rf3_{k}": v for k, v in rf3_output.summary_confidences.items()},
@@ -263,3 +269,8 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         rf3_sample_idx=rf3_output.sample_idx,
         rf3_seed=rf3_output.seed,
     )
+
+    print(rf3_packed_pose.pose.cache)
+    print(kwargs)
+
+    return rf3_packed_pose, kwargs

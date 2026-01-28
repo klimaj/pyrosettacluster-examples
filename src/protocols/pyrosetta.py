@@ -245,6 +245,8 @@ def compute_rmsd(
     # Print runtime info
     print_protocol_info(**kwargs)
     # Setup protocol
+    print(packed_pose.pose.cache)
+    print(kwargs)
     src_pose = packed_pose.pose
     ref_pose = packed_pose.pose.cache["mpnn_packed_pose"].pose
     # Superimpose input onto reference
