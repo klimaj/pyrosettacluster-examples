@@ -157,15 +157,18 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     # Parse results
     packed_poses = []
     for mpnn_output in results:
-        output_packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
-        output_packed_pose = output_packed_pose.update_scores(
+        _packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
+        _packed_pose = _packed_pose.update_scores(
             mpnn_input_dict=mpnn_output.input_dict,
             mpnn_output_dict=mpnn_output.output_dict,
-            mpnn_packed_pose=packed_pose,
+            mpnn_packed_pose=packed_pose.clone(),
         )
-        packed_poses.append(output_packed_pose)
+        packed_poses.append(_packed_pose)
 
-    kwargs["mpnn_packed_pose"] = packed_pose
+    kwargs["mpnn_packed_pose"] = packed_pose.clone()
+
+    for _packed_pose in packed_poses:
+        print(list(_packed_pose.pose.cache.all_keys))
 
     return [kwargs, *packed_poses]
 
@@ -209,6 +212,8 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
 
     # Print runtime info
     print_protocol_info(**kwargs)
+    print(list(packed_pose.pose.cache.all_keys))
+    print(list(kwargs.keys()))
     # Setup seed
     torch_seed = pyrosetta_to_torch_seed(kwargs["PyRosettaCluster_seed"])
     seed_everything(torch_seed)
@@ -258,11 +263,12 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     rf3_output = results[example_id][0] # Top ranked prediction
     rf3_packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
 
-    print(rf3_packed_pose.pose.cache)
+    print(packed_pose.pose.cache)
     print(kwargs)
 
+    _reserved = packed_pose.pose.cache._reserved
     rf3_packed_pose = rf3_packed_pose.update_scores(
-        packed_pose.pose.cache, # Propagate protocol scores
+        {k: v for k, v in packed_pose.pose.cache.items() if k not in _reserved},
         {f"rf3_{k}": v for k, v in rf3_output.confidences.items()},
         {f"rf3_{k}": v for k, v in rf3_output.summary_confidences.items()},
         rf3_example_id=rf3_output.example_id,
