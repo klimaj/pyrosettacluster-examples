@@ -72,6 +72,8 @@ def create_tasks(num_tasks: int) -> Generator[Dict[str, Any], None, None]:
             "rf3_diffusion_batch_size": 2,
             "rf3_n_recycles": 5,
             "rf3_num_steps": 50,
+            # Protocol-specific parameters
+            "mpnn_packed_pose_key": "mpnn_packed_pose",
         }
 
 
@@ -103,7 +105,7 @@ def main(
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
-            input_packed_pose=None, # pyrosetta.pose_from_sequence("NLYIQWLKDGGPSSGRPPPS"),
+            input_packed_pose=None,
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,
@@ -148,7 +150,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num_tasks",
         type=int,
-        default=50,
+        default=1,
         required=False,
         help="The number of tasks in the PyRosettaCluster simulation.",
     )

@@ -41,10 +41,6 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.backends.cudnn.allow_tf32 = False
 
-    import pyrosetta
-    pyrosetta.secure_unpickle.add_secure_package("pandas")
-    pyrosetta.secure_unpickle.add_secure_package("biotite")
-
     from lightning.fabric import seed_everything
     from rfd3.engine import RFD3InferenceConfig, RFD3InferenceEngine
 
@@ -94,6 +90,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
+        mpnn_packed_pose_key: A required key name for the ProteinMPNN `PackedPose` object.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
@@ -112,10 +109,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.backends.cudnn.allow_tf32 = False
 
-    import pyrosetta
     import pyrosetta.distributed.io as io
-    pyrosetta.secure_unpickle.add_secure_package("pandas")
-    pyrosetta.secure_unpickle.add_secure_package("biotite")
 
     from lightning.fabric import seed_everything
     from mpnn.inference_engines.mpnn import MPNNInferenceEngine
@@ -159,19 +153,14 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     for mpnn_output in results:
         _packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
         _packed_pose = _packed_pose.update_scores(
+            {kwargs["mpnn_packed_pose_key"]: packed_pose.clone()},
             mpnn_input_dict=mpnn_output.input_dict,
             mpnn_output_dict=mpnn_output.output_dict,
-            mpnn_packed_pose=packed_pose.clone(),
+            mpnn_pdbstring=io.to_pdbstring(packed_pose),
         )
         packed_poses.append(_packed_pose)
 
-    kwargs["mpnn_packed_pose"] = packed_pose.clone()
-
-    for _packed_pose in packed_poses:
-        print(list(_packed_pose.pose.cache.all_keys))
-
-    return [kwargs, *packed_poses]
-
+    return packed_poses
 
 
 @timeit
@@ -187,7 +176,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
-        A list of `PackedPose` object.
+        A `PackedPose` object.
     """
     import os
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
@@ -204,7 +193,6 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
 
     import pyrosetta
     import pyrosetta.distributed.io as io
-    pyrosetta.secure_unpickle.add_secure_package("pandas")
 
     from lightning.fabric import seed_everything
     from rf3.inference_engines.rf3 import RF3InferenceEngine
@@ -212,8 +200,6 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
 
     # Print runtime info
     print_protocol_info(**kwargs)
-    print(list(packed_pose.pose.cache.all_keys))
-    print(list(kwargs.keys()))
     # Setup seed
     torch_seed = pyrosetta_to_torch_seed(kwargs["PyRosettaCluster_seed"])
     seed_everything(torch_seed)
@@ -263,10 +249,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     rf3_output = results[example_id][0] # Top ranked prediction
     rf3_packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
 
-    print(packed_pose.pose.cache)
-    print(kwargs)
-
-    _reserved = packed_pose.pose.cache._reserved
+    _reserved = pyrosetta.Pose().cache._reserved
     rf3_packed_pose = rf3_packed_pose.update_scores(
         {k: v for k, v in packed_pose.pose.cache.items() if k not in _reserved},
         {f"rf3_{k}": v for k, v in rf3_output.confidences.items()},
@@ -276,7 +259,4 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         rf3_seed=rf3_output.seed,
     )
 
-    print(rf3_packed_pose.pose.cache)
-    print(kwargs)
-
-    return rf3_packed_pose, kwargs
+    return rf3_packed_pose

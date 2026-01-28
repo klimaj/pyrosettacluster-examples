@@ -227,28 +227,30 @@ def compute_rmsd(
     packed_pose: PackedPose, **kwargs: Any
 ) -> PackedPose:
     """
-    A PyRosetta protocol that performs C-alpha superposition and computes the
-    backbone heavy atom RMSD between the input `PackedPose` and a `PackedPose`
-    object cached in the "mpnn_packed_pose" `Pose.cache` dictionary key value.
+    A PyRosetta protocol that performs C-alpha superposition and computes the backbone
+    heavy atom root-mean-squared deviation (RMSD) between the input `PackedPose` and a
+    reference `PackedPose` object given by the 'mpnn_packed_pose_key' keyword argument
+    parameter in the input `PackedPose.pose.cache` dictionary, which is cleared from
+    the `PackedPose.pose.cache` dictionary at the end of the protocol.
 
     Args:
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
+        mpnn_packed_pose_key: A required key name for the ProteinMPNN `PackedPose` object.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
         A `PackedPose` object.
     """
     import pyrosetta
+    import pyrosetta.distributed.io as io
 
     # Print runtime info
     print_protocol_info(**kwargs)
     # Setup protocol
-    print(packed_pose.pose.cache)
-    print(kwargs)
     src_pose = packed_pose.pose
-    ref_pose = packed_pose.pose.cache["mpnn_packed_pose"].pose
+    ref_pose = packed_pose.pose.cache[kwargs["mpnn_packed_pose_key"]].pose
     # Superimpose input onto reference
     superimpose_mover = pyrosetta.rosetta.protocols.simple_moves.SuperimposeMover()
     superimpose_mover.set_ca_only(True)
@@ -256,6 +258,12 @@ def compute_rmsd(
     superimpose_mover.set_target_range(start=1, end=ref_pose.size())
     superimpose_mover.apply(src_pose)
     # Compute RMSD
-    bb_scrmsd = pyrosetta.rosetta.core.scoring.bb_rmsd_including_O(src_pose, ref_pose)
+    bb_rmsd = pyrosetta.rosetta.core.scoring.bb_rmsd_including_O(src_pose, ref_pose)
+    # Cache RMSD
+    packed_pose = packed_pose.update_scores(bb_rmsd=bb_rmsd)
+    # Clear reference `PackedPose` object from `Pose.cache`
+    pose = packed_pose.pose
+    pose.cache.pop(kwargs["mpnn_packed_pose_key"])
+    packed_pose = io.to_packed(pose)
 
-    return packed_pose.update_scores(bb_scrmsd=bb_scrmsd)
+    return packed_pose
