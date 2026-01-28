@@ -158,7 +158,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     packed_poses = []
     for mpnn_output in results:
         output_packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
-        output_packed_pose = mpnn_packed_pose.update_scores(
+        output_packed_pose = output_packed_pose.update_scores(
             mpnn_input_dict=mpnn_output.input_dict,
             mpnn_output_dict=mpnn_output.output_dict,
             mpnn_packed_pose=packed_pose,
