@@ -253,12 +253,13 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
             cyclic_chains=[],
         )
     rf3_output = results[example_id][0] # Top ranked prediction
-    packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
+    rf3_packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
 
-    return packed_pose.update_scores(
+    return rf3_packed_pose.update_scores(
+        packed_pose.pose.cache, # Propagate protocol scores
         {f"rf3_{k}": v for k, v in rf3_output.confidences.items()},
         {f"rf3_{k}": v for k, v in rf3_output.summary_confidences.items()},
         rf3_example_id=rf3_output.example_id,
-        rf3_sample_idx =rf3_output.sample_idx,
-        rf3_seed = rf3_output.seed,
+        rf3_sample_idx=rf3_output.sample_idx,
+        rf3_seed=rf3_output.seed,
     )
