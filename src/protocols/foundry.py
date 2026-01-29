@@ -32,7 +32,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
     os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
     # Disable GPU for determinism
-    # os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
     import torch
     torch.use_deterministic_algorithms(True, warn_only=True)
@@ -100,7 +100,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
     os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
     # Disable GPU for determinism
-    # os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
     import torch
     torch.use_deterministic_algorithms(True, warn_only=True)
@@ -182,7 +182,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
     os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
     # Disable GPU for determinism
-    # os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
     import torch
     torch.use_deterministic_algorithms(True, warn_only=True)
@@ -193,6 +193,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
 
     import pyrosetta
     import pyrosetta.distributed.io as io
+    import toolz
 
     from lightning.fabric import seed_everything
     from rf3.inference_engines.rf3 import RF3InferenceEngine
@@ -251,9 +252,11 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
 
     _reserved = pyrosetta.Pose().cache._reserved
     rf3_packed_pose = rf3_packed_pose.update_scores(
-        {k: v for k, v in packed_pose.pose.cache.items() if k not in _reserved},
-        {f"rf3_{k}": v for k, v in rf3_output.confidences.items()},
-        {f"rf3_{k}": v for k, v in rf3_output.summary_confidences.items()},
+        toolz.keyfilter(lambda k: k not in _reserved, packed_pose.pose.cache),
+        toolz.keymap(
+            lambda k: f"rf3_{k}",
+            toolz.merge(rf3_output.confidences, rf3_output.summary_confidences)
+        ),
         rf3_example_id=rf3_output.example_id,
         rf3_sample_idx=rf3_output.sample_idx,
         rf3_seed=rf3_output.seed,
