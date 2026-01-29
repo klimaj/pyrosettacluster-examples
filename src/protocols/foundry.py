@@ -194,6 +194,8 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     import pyrosetta
     import pyrosetta.distributed.io as io
     import toolz
+    pyrosetta.secure_unpickle.add_secure_package("pandas")
+    pyrosetta.secure_unpickle.add_secure_package("biotite")
 
     from lightning.fabric import seed_everything
     from rf3.inference_engines.rf3 import RF3InferenceEngine
@@ -260,6 +262,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         rf3_example_id=rf3_output.example_id,
         rf3_sample_idx=rf3_output.sample_idx,
         rf3_seed=rf3_output.seed,
+        rf3_atom_array=rf3_output.atom_array,
     )
 
     return rf3_packed_pose
