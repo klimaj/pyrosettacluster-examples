@@ -111,6 +111,8 @@ def main(
             tasks=create_tasks(num_tasks),
             input_packed_pose=input_packed_pose,
             client=client,
+            seeds=[111] * num_protocols,
+            decoy_ids=[0] * num_protocols,
             scratch_dir=scratch_dir,
             output_path=output_path,
             project_name="pyrosettacluster-examples",
