@@ -9,6 +9,7 @@ from dask.distributed import Client, LocalCluster
 from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator
 
+from src.runners.example_1 import get_input_packed_pose
 from src.protocols.foundry import proteinmpnn, rf3, rfd3
 from src.protocols.pyrosetta import compute_rmsd, idealize_poly_gly, minimize
 
@@ -28,7 +29,8 @@ def initialize_pyrosetta() -> None:
 def download_checkpoints() -> None:
     """Download Foundry model weights"""
     subprocess.run(
-        ["foundry", "install", "rfd3", "proteinmpnn", "rf3"],
+        # ["foundry", "install", "rfd3", "proteinmpnn", "rf3"],
+        ["foundry", "install", "rf3"],
         check=True,
     )
 
@@ -101,11 +103,13 @@ def main(
         dashboard_address=":8787",
         resources={"CPU": 1},
     ) as cluster, Client(cluster) as client:
-        protocols = [rfd3, idealize_poly_gly, proteinmpnn, rf3, minimize, compute_rmsd]
+        # protocols = [rfd3, idealize_poly_gly, proteinmpnn, rf3, minimize, compute_rmsd]
+        protocols = [rf3]
+        input_packed_pose = get_input_packed_pose()
         num_protocols = len(protocols)
         PyRosettaCluster(
             tasks=create_tasks(num_tasks),
-            input_packed_pose=None,
+            input_packed_pose=input_packed_pose,
             client=client,
             scratch_dir=scratch_dir,
             output_path=output_path,
