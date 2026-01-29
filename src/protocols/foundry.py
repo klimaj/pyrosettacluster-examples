@@ -182,7 +182,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
     os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
     # Disable GPU for determinism
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    # os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
     import torch
     torch.use_deterministic_algorithms(True, warn_only=True)
