@@ -230,7 +230,9 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     # Dump temporary .pdb file
     tmp_path = Path(kwargs["PyRosettaCluster_tmp_path"])
     tmp_pdb_file = tmp_path / "tmp.pdb"
-    pdbstring = io.to_pdbstring(packed_pose)
+    tmp_pose = packed_pose.pose
+    tmp_pose.cache.clear()
+    pdbstring = io.to_pdbstring(tmp_pose)
     tmp_pdb_file.write_text(pdbstring)
     print(pdbstring)
     # Setup RF3 inference inputs
