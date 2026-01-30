@@ -58,10 +58,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     # Configure RFD3
     config = RFD3InferenceConfig(
         specification={
-            "dialect": 2,
             "length": kwargs["rfd3"]["length"],
-            "is_non_loopy": True,
-            "plddt_enhanced	": True,
         },
         diffusion_batch_size=kwargs["rfd3"]["diffusion_batch_size"],
     )
