@@ -45,6 +45,8 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
     Yields:
         An output `dict` object representing a task.
     """
+    import torch
+
     if not isinstance(num_tasks, int):
         raise ValueError(
             f"The 'num_tasks' keyword argument parameter must be of type `int`. Received: {type(num_tasks)}"
@@ -54,7 +56,7 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
             f"The 'gpu' keyword argument parameter must be of type `bool`. Received: {type(gpu)}"
         )
 
-    cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES", "") if gpu else ""
+    cuda_visible_devices = ",".join(map(str, range(torch.cuda.device_count()))) if gpu and torch.cuda.is_available() else ""
     for _ in range(num_tasks):
         yield {
             "options": {
