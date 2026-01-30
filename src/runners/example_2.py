@@ -36,7 +36,7 @@ def download_checkpoints() -> None:
 
 def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, None]:
     """
-    Create tasks for a PyRosettaCluster simulation.
+    Create tasks for a PyRosettaCluster simulation that uses a Dask `LocalCluster` instance.
 
     Args:
         num_tasks: A required `int` object representing the number of tasks to generate.

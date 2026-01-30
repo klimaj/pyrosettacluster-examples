@@ -139,9 +139,9 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     input_dicts = [
         {
             "structure_path": str(structure_path),
-            "batch_size": kwargs["mpnn"]["batch_size"],
-            "number_of_batches": kwargs["mpnn"]["number_of_batches"],
-            "temperature": kwargs["mpnn"]["temperature"],
+            "batch_size": kwargs["proteinmpnn"]["batch_size"],
+            "number_of_batches": kwargs["proteinmpnn"]["number_of_batches"],
+            "temperature": kwargs["proteinmpnn"]["temperature"],
             "omit": ["CYS", "UNK"],
             "structure_noise": 0.0,
             "decode_type": "auto_regressive",
