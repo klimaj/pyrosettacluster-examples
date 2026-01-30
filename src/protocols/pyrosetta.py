@@ -168,7 +168,7 @@ def run_xml_file(packed_pose: PackedPose, xml_file: Path) -> PackedPose:
 
 @timeit
 @requires_packed_pose
-def idealize_poly_gly(
+def cst_cart_min_poly_gly(
     packed_pose: PackedPose, **kwargs: Any
 ) -> PackedPose:
     """
@@ -189,14 +189,14 @@ def idealize_poly_gly(
     # Print runtime info
     print_protocol_info(**kwargs)
     # Run RosettaScripts
-    xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "idealize_poly_gly.xml"
+    xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "cst_cart_min_poly_gly.xml"
 
     return run_xml_file(packed_pose, xml_file)
 
 
 @timeit
 @requires_packed_pose
-def minimize(
+def cart_min(
     packed_pose: PackedPose, **kwargs: Any
 ) -> PackedPose:
     """
@@ -216,7 +216,7 @@ def minimize(
     # Print runtime info
     print_protocol_info(**kwargs)
     # Run RosettaScripts
-    xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "minimize.xml"
+    xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "cart_min.xml"
 
     return run_xml_file(packed_pose, xml_file)
 

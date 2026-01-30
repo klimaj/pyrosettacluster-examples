@@ -4,7 +4,7 @@ __author__ = "Jason C. Klima"
 from pathlib import Path
 from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
-from typing import Any, List, Optional
+from typing import Any, List
 
 from src.utils import (
     atom_array_to_packed_pose,
@@ -23,24 +23,27 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
         packed_pose: A required `None` object.
 
     Keyword Args:
+        cuda_visible_devices: A required key name for the 'CUDA_VISIBLE_DEVICES' environment variable parameter.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
         A `PackedPose` object.
     """
     import os
-    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
-    os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
-    # Disable GPU for determinism
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    os.environ["CUDA_VISIBLE_DEVICES"] = kwargs["cuda_visible_devices"]
+    if os.getenv("CUDA_VISIBLE_DEVICES"):
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+        os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
 
     import torch
     torch.use_deterministic_algorithms(True, warn_only=True)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cuda.matmul.allow_tf32 = False
-    torch.backends.cudnn.allow_tf32 = False
+    if os.getenv("CUDA_VISIBLE_DEVICES"):
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
 
+    from contextlib import nullcontext
     from lightning.fabric import seed_everything
     from rfd3.engine import RFD3InferenceConfig, RFD3InferenceEngine
 
@@ -55,18 +58,21 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     # Configure RFD3
     config = RFD3InferenceConfig(
         specification={
-            "length": kwargs["rfd3_length"],
+            "dialect": 2,
+            "length": kwargs["rfd3"]["length"],
+            "is_non_loopy": True,
+            "plddt_enhanced	": True,
         },
-        diffusion_batch_size=kwargs["rfd3_diffusion_batch_size"],
+        diffusion_batch_size=kwargs["rfd3"]["diffusion_batch_size"],
     )
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)
     # Run RFD3
-    with torch.no_grad(), torch.amp.autocast("cuda", enabled=False):
+    with torch.amp.autocast("cuda", enabled=False) if os.getenv("CUDA_VISIBLE_DEVICES") else nullcontext():
         results = model.run(
             inputs=None,
             out_dir=None,
-            n_batches=1,
+            n_batches=kwargs["rfd3"]["n_batches"],
         )
     packed_poses = []
     for _example_id, rfd3_outputs in results.items():
@@ -91,26 +97,29 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
 
     Keyword Args:
         mpnn_packed_pose_key: A required key name for the ProteinMPNN `PackedPose` object.
+        cuda_visible_devices: A required key name for the 'CUDA_VISIBLE_DEVICES' environment variable parameter.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
         A list of `PackedPose` objects.
     """
     import os
-    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
-    os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
-    # Disable GPU for determinism
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    os.environ["CUDA_VISIBLE_DEVICES"] = kwargs["cuda_visible_devices"]
+    if os.getenv("CUDA_VISIBLE_DEVICES"):
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+        os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
 
     import torch
     torch.use_deterministic_algorithms(True, warn_only=True)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cuda.matmul.allow_tf32 = False
-    torch.backends.cudnn.allow_tf32 = False
+    if os.getenv("CUDA_VISIBLE_DEVICES"):
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
 
     import pyrosetta.distributed.io as io
 
+    from contextlib import nullcontext
     from lightning.fabric import seed_everything
     from mpnn.inference_engines.mpnn import MPNNInferenceEngine
 
@@ -133,9 +142,9 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     input_dicts = [
         {
             "structure_path": str(structure_path),
-            "batch_size": kwargs["mpnn_batch_size"],
-            "number_of_batches": kwargs["mpnn_number_of_batches"],
-            "temperature": kwargs["mpnn_temperature"],
+            "batch_size": kwargs["mpnn"]["batch_size"],
+            "number_of_batches": kwargs["mpnn"]["number_of_batches"],
+            "temperature": kwargs["mpnn"]["temperature"],
             "omit": ["CYS", "UNK"],
             "structure_noise": 0.0,
             "decode_type": "auto_regressive",
@@ -146,7 +155,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     ]
     # Run ProteinMPNN
     model = MPNNInferenceEngine(**config)
-    with torch.no_grad(), torch.amp.autocast("cuda", enabled=False):
+    with torch.amp.autocast("cuda", enabled=False) if os.getenv("CUDA_VISIBLE_DEVICES") else nullcontext():
         results = model.run(input_dicts=input_dicts)
     # Parse results
     packed_poses = []
@@ -173,30 +182,31 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
+        cuda_visible_devices: A required key name for the 'CUDA_VISIBLE_DEVICES' environment variable parameter.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
         A `PackedPose` object.
     """
     import os
-    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
-    os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
-    # Disable GPU for determinism
-    # os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    os.environ["CUDA_VISIBLE_DEVICES"] = kwargs["cuda_visible_devices"]
+    if os.getenv("CUDA_VISIBLE_DEVICES"):
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
+        os.environ["CUDA_DEVICE_MAX_CONNECTIONS"] = "1"
 
     import torch
     torch.use_deterministic_algorithms(True, warn_only=True)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cuda.matmul.allow_tf32 = False
-    torch.backends.cudnn.allow_tf32 = False
+    if os.getenv("CUDA_VISIBLE_DEVICES"):
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
 
     import pyrosetta
     import pyrosetta.distributed.io as io
     import toolz
-    pyrosetta.secure_unpickle.add_secure_package("pandas")
-    pyrosetta.secure_unpickle.add_secure_package("biotite")
 
+    from contextlib import nullcontext
     from lightning.fabric import seed_everything
     from rf3.inference_engines.rf3 import RF3InferenceEngine
     from rf3.utils.inference import InferenceInput
@@ -208,9 +218,9 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     seed_everything(torch_seed)
     # Initialize RF3 inference engine
     engine = RF3InferenceEngine(
-        n_recycles=kwargs["rf3_n_recycles"],
-        diffusion_batch_size=kwargs["rf3_diffusion_batch_size"],
-        num_steps=kwargs["rf3_num_steps"],
+        n_recycles=kwargs["rf3"]["n_recycles"],
+        diffusion_batch_size=kwargs["rf3"]["diffusion_batch_size"],
+        num_steps=kwargs["rf3"]["num_steps"],
         template_noise_scale=1e-5,
         raise_if_missing_msa_for_protein_of_length_n=None,
         compress_outputs=False,
@@ -235,7 +245,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         ground_truth_conformer_selection=None,
     )
     # Run RF3 inference
-    with torch.no_grad(), torch.amp.autocast("cuda", enabled=False):
+    with torch.amp.autocast("cuda", enabled=False) if os.getenv("CUDA_VISIBLE_DEVICES") else nullcontext():
         results = engine.run(
             inputs=inputs,
             out_dir=None,
@@ -262,7 +272,6 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         rf3_example_id=rf3_output.example_id,
         rf3_sample_idx=rf3_output.sample_idx,
         rf3_seed=rf3_output.seed,
-        rf3_atom_array=rf3_output.atom_array,
     )
 
     return rf3_packed_pose
