@@ -204,7 +204,6 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     import toolz
 
     from contextlib import nullcontext
-    from lightning.fabric import seed_everything
     from rf3.inference_engines.rf3 import RF3InferenceEngine
     from rf3.utils.inference import InferenceInput
 
@@ -212,7 +211,6 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     print_protocol_info(**kwargs)
     # Setup seed
     torch_seed = pyrosetta_to_torch_seed(kwargs["PyRosettaCluster_seed"])
-    seed_everything(torch_seed)
     # Initialize RF3 inference engine
     engine = RF3InferenceEngine(
         n_recycles=kwargs["rf3"]["n_recycles"],
@@ -226,13 +224,15 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         ckpt_path="rf3",
         seed=torch_seed,
         num_nodes=1,
-        devices_per_node=1,
+        devices_per_node=torch.cuda.device_count(),
         verbose=True,
     )
     # Dump temporary .pdb file
     tmp_path = Path(kwargs["PyRosettaCluster_tmp_path"])
     tmp_pdb_file = tmp_path / "tmp.pdb"
-    io.dump_pdb(packed_pose, str(tmp_pdb_file))
+    pdbstring = io.to_pdbstring(packed_pose)
+    tmp_pdb_file.write_text(pdbstring)
+    print(pdbstring)
     # Setup RF3 inference inputs
     example_id = "rf3_example_id"
     inputs = InferenceInput.from_cif_path(
