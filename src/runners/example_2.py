@@ -189,7 +189,7 @@ def main(
             protocols=protocols,
             clients_indices=[0] * num_protocols,
             priorities=list(range(num_protocols)),
-            resources=Resources(protocols, gpu=gpu).get(),
+            resources=Resources(*protocols, gpu=gpu).get(),
         )
 
 
@@ -220,7 +220,7 @@ if __name__ == "__main__":
         "--gpu",
         dest="gpu",
         action="store_true",
-        help="Run the PyRosettaCluster simulation on GPUs",
+        help="Run the PyRosettaCluster simulation with GPUs enabled.",
     )
     parser.set_defaults(gpu=False)
     args = parser.parse_args()
