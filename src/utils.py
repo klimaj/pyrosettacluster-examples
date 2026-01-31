@@ -120,6 +120,28 @@ def get_dataframe(scorefile: Path) -> pd.DataFrame:
     )
 
 
+def get_dataframe_from_pickle(scorefile: Path) -> pd.DataFrame:
+    """
+    Return a `pandas.DataFrame` object from a pickled `pandas.DataFrame`-formatted scorefile.
+
+    Args:
+        scorefile: A required `Path` object to the `pandas.DataFrame`-formatted scorefile.
+
+    Returns:
+        A `pandas.DataFrame` object.
+    """
+    df = (
+        pd.read_pickle(scorefile, compression="infer")
+        .reset_index(drop=False)
+        .rename(columns={"index": "output_file"})
+    )
+    if set(df.columns) == {"output_file", "scores", "metadata", "instance"}:
+        scores_df = df["scores"].apply(pd.Series)
+        df = pd.concat([df[["output_file"]], scores_df], axis=1)
+
+    return df
+
+
 def pyrosetta_to_torch_seed(pyrosetta_seed: int) -> int:
     """
     Scale an input PyRosetta seed to the Torch seed proper range.
