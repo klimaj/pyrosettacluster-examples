@@ -135,7 +135,10 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     }
     # Configure per-input inference
     structure_path = Path(kwargs["PyRosettaCluster_tmp_path"]) / "tmp.pdb"
-    structure_path.write_text(io.to_pdbstring(packed_pose))
+    pose = packed_pose.pose
+    pose.cache.clear() # Clear scores from saved
+    mpnn_pdbstring = io.to_pdbstring(packed_pose)
+    structure_path.write_text(mpnn_pdbstring)
     input_dicts = [
         {
             "structure_path": str(structure_path),
@@ -162,7 +165,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
             {kwargs["mpnn_packed_pose_key"]: packed_pose.clone()},
             mpnn_input_dict=mpnn_output.input_dict,
             mpnn_output_dict=mpnn_output.output_dict,
-            mpnn_pdbstring=io.to_pdbstring(packed_pose),
+            mpnn_pdbstring=mpnn_pdbstring,
         )
         packed_poses.append(_packed_pose)
 
@@ -199,6 +202,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         torch.backends.cuda.matmul.allow_tf32 = False
         torch.backends.cudnn.allow_tf32 = False
 
+    import biotite.structure as struc
     import pyrosetta
     import pyrosetta.distributed.io as io
     import toolz
@@ -231,10 +235,8 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     tmp_path = Path(kwargs["PyRosettaCluster_tmp_path"])
     tmp_pdb_file = tmp_path / "tmp.pdb"
     tmp_pose = packed_pose.pose
-    tmp_pose.cache.clear()
-    pdbstring = io.to_pdbstring(tmp_pose)
-    tmp_pdb_file.write_text(pdbstring)
-    print(pdbstring)
+    tmp_pose.cache.clear() # Clean up PDB file output to prevent error in `InferenceInput.from_cif_path`
+    tmp_pdb_file.write_text(io.to_pdbstring(tmp_pose))
     # Setup RF3 inference inputs
     example_id = "rf3_example_id"
     inputs = InferenceInput.from_cif_path(
@@ -260,7 +262,12 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         )
     rf3_output = results[example_id][0] # Top ranked prediction
     rf3_packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
-
+    # Compute mean heavy-atom pLDDT per residue
+    rf3_plddt_per_res = [
+        res_atoms[res_atoms.element != "H"].get_annotation("b_factor")
+        for res_atoms in struc.residue_iter(rf3_output.atom_array)
+    ]
+    # Update scores
     _reserved = pyrosetta.Pose().cache._reserved
     rf3_packed_pose = rf3_packed_pose.update_scores(
         toolz.keyfilter(lambda k: k not in _reserved, packed_pose.pose.cache),
@@ -271,6 +278,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         rf3_example_id=rf3_output.example_id,
         rf3_sample_idx=rf3_output.sample_idx,
         rf3_seed=rf3_output.seed,
+        rf3_plddt_per_res=rf3_plddt_per_res,
     )
 
     return rf3_packed_pose
