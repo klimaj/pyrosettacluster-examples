@@ -158,7 +158,7 @@ def main(
     # Run the simulation
     with LocalCluster(
         n_workers=n_workers,
-        threads_per_worker=1,
+        threads_per_worker=2,
         memory_limit=f"{12.7 / n_workers:.2f}GB",
         scheduler_port=8786,
         dashboard_address=":8787",
@@ -180,7 +180,7 @@ def main(
             output_init_file=None,
             compression=True,
             compressed=False,
-            output_decoy_types=[".pdb"],
+            output_decoy_types=[".pdb", ".b64_pose"],
             output_scorefile_types=[".json", ".bz2"],
             author=__author__,
             license=(

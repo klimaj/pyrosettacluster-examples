@@ -264,10 +264,17 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     rf3_output = results[example_id][0] # Top ranked prediction
     rf3_packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
     # Compute mean heavy-atom pLDDT per residue
-    rf3_plddt_per_res = [
-        np.mean(res_atoms[res_atoms.element != "H"].get_annotation("b_factor"))
+    rf3_mean_plddt_per_res = [
+        float(np.mean(res_atoms[res_atoms.element != "H"].get_annotation("b_factor")))
         for res_atoms in struc.residue_iter(rf3_output.atom_array)
     ]
+    # Get backbone atom pLDDT per residue
+    rf3_plddt_per_atom = {}
+    for atom_name in ("N", "CA", "C", "O"):
+        rf3_plddt_per_atom[atom_name] = [
+            float(res_atoms[res_atoms.atom_name == atom_name].get_annotation("b_factor")[0])
+            for res_atoms in struc.residue_iter(rf3_output.atom_array)
+        ]
     # Update scores
     _reserved = pyrosetta.Pose().cache._reserved
     rf3_packed_pose = rf3_packed_pose.update_scores(
@@ -279,7 +286,8 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         rf3_example_id=rf3_output.example_id,
         rf3_sample_idx=rf3_output.sample_idx,
         rf3_seed=rf3_output.seed,
-        rf3_plddt_per_res=rf3_plddt_per_res,
+        rf3_mean_plddt_per_res=rf3_mean_plddt_per_res,
+        rf3_plddt_per_atom=rf3_plddt_per_atom,
     )
 
     return rf3_packed_pose
