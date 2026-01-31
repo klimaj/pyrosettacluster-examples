@@ -203,6 +203,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         torch.backends.cudnn.allow_tf32 = False
 
     import biotite.structure as struc
+    import numpy as np
     import pyrosetta
     import pyrosetta.distributed.io as io
     import toolz
@@ -264,7 +265,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     rf3_packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
     # Compute mean heavy-atom pLDDT per residue
     rf3_plddt_per_res = [
-        res_atoms[res_atoms.element != "H"].get_annotation("b_factor")
+        np.mean(res_atoms[res_atoms.element != "H"].get_annotation("b_factor"))
         for res_atoms in struc.residue_iter(rf3_output.atom_array)
     ]
     # Update scores
