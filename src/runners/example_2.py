@@ -2,9 +2,10 @@ __author__ = "Jason C. Klima"
 
 
 import argparse
-import os
 import subprocess
 import pyrosetta
+import torch
+import sys
 
 from collections.abc import Callable
 from dask.distributed import Client, LocalCluster
@@ -45,8 +46,6 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
     Yields:
         An output `dict` object representing a task.
     """
-    import torch
-
     if not isinstance(num_tasks, int):
         raise ValueError(
             f"The 'num_tasks' keyword argument parameter must be of type `int`. Received: {type(num_tasks)}"
@@ -155,6 +154,16 @@ def main(
     if gpu:
         resources.update(Resources._gpu_resource)
 
+    # System info accounting
+    system_info = {"sys.platform": sys.platform}
+    _cuda_is_available = torch.cuda.is_available()
+    if gpu and _cuda_is_available:
+        system_info["torch.cuda.is_available()"] = _cuda_is_available
+        _device_count = torch.cuda.device_count()
+        system_info["torch.cuda.device_count()"] = _device_count
+        for i in range(_device_count):
+            system_info[f"torch.cuda.get_device_name({i})"] = torch.cuda.get_device_name(i)
+
     # Run the simulation
     with LocalCluster(
         n_workers=n_workers,
@@ -182,6 +191,7 @@ def main(
             compressed=False,
             output_decoy_types=[".pdb", ".b64_pose"],
             output_scorefile_types=[".json", ".bz2"],
+            system_info=system_info,
             author=__author__,
             license=(
                 f"Copyright (c) {__author__}. "
