@@ -3,17 +3,20 @@ __author__ = "Jason C. Klima"
 
 import argparse
 import subprocess
+import os
 import pyrosetta
 import torch
 import sys
 
 from collections.abc import Callable
 from dask.distributed import Client, LocalCluster
+from pathlib import Path
 from pyrosetta.distributed.cluster import PyRosettaCluster
 from typing import Any, Dict, Generator, Union
 
 from src.protocols.foundry import proteinmpnn, rf3, rfd3
 from src.protocols.pyrosetta import cart_min, compute_rmsd, cst_cart_min_poly_gly
+from src.utils import get_sha256_digest
 
 
 class Resources:
@@ -142,7 +145,9 @@ def get_system_info(gpu: bool) -> Dict[str, Any]:
     Returns:
         A `dict` object representing the `PyRosettaCluster(system_info=...)` keyword argument parameter.
     """
+    # Cache system platform
     system_info = {"sys.platform": sys.platform}
+    # Cache CUDA device info
     _cuda_is_available = torch.cuda.is_available()
     if gpu and _cuda_is_available:
         system_info["torch.cuda.is_available()"] = _cuda_is_available
@@ -150,6 +155,12 @@ def get_system_info(gpu: bool) -> Dict[str, Any]:
         system_info["torch.cuda.device_count()"] = _device_count
         for i in range(_device_count):
             system_info[f"torch.cuda.get_device_name({i})"] = torch.cuda.get_device_name(i)
+    # Cache Foundry checkpoint file checksums
+    system_info.setdefault("weights", {})
+    ckpt_dir = (Path(os.getenv("HOME")) / ".foundry" / "checkpoints").resolve()
+    ckpt_files = ckpt_dir.glob("*")
+    for ckpt_file in ckpt_files:
+        system_info["weights"][ckpt_file.name] = get_sha256_digest(ckpt_file)
 
     return system_info
 
@@ -242,17 +253,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--gpu",
-        dest="gpu",
-        action="store_true",
-        help="Run the PyRosettaCluster simulation with GPUs enabled.",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Run the PyRosettaCluster simulation with GPUs enabled or disabled.",
     )
-    parser.add_argument(
-        "--no-gpu",
-        dest="gpu",
-        action="store_false",
-        help="Run the PyRosettaCluster simulation without GPUs enabled.",
-    )
-    parser.set_defaults(gpu=False)
     args = parser.parse_args()
     main(
         args.output_path,

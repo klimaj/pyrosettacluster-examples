@@ -1,6 +1,7 @@
 __author__ = "Jason C. Klima"
 
 
+import hashlib
 import json
 import pandas as pd
 import pyrosetta
@@ -211,3 +212,21 @@ def print_protocol_info(**kwargs: Any) -> None:
         f"CUDA device name: {cuda_device_name};",
         sep=" ",
     )
+
+
+def get_sha256_digest(checkpoint_file: Path, size=1048576) -> str:
+    """
+    Generate a SHA256 digest of a binary checkpoint file.
+
+    Args:
+        checkpoint_file: A required `Path` object for which to generate the SHA256 digest.
+
+    Returns:
+        A `str` object representing the SHA256 digest.
+    """
+    h = hashlib.sha256()
+    with checkpoint_file.open("rb") as f:
+        while data := f.read(size):
+            h.update(data)
+
+    return h.hexdigest()
