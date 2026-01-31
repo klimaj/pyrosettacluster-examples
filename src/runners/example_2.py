@@ -78,18 +78,18 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
             # RFdiffusion-3 parameters
             "rfd3": {
                 "length": "20-30",
-                "diffusion_batch_size": 2,
+                "diffusion_batch_size": 1, # 2,
                 "n_batches": 1,
             },
             # ProteinMPNN parameters
             "proteinmpnn": {
                 "temperature": 0.1,
-                "batch_size": 2,
+                "batch_size": 1, # 2,
                 "number_of_batches": 1,
             },
             # RoseTTAFold-3 parameters
             "rf3": {
-                "diffusion_batch_size": 2,
+                "diffusion_batch_size": 1, # 2,
                 "n_recycles": 5,
                 "num_steps": 50,
             },
