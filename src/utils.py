@@ -214,12 +214,18 @@ def print_protocol_info(**kwargs: Any) -> None:
     )
 
 
-def get_sha256_digest(checkpoint_file: Path, size=1048576) -> str:
+def get_sha256_digest(checkpoint_file: Path, size=1024 * 1024, verbose=False) -> str:
     """
     Generate a SHA256 digest of a binary checkpoint file.
 
     Args:
         checkpoint_file: A required `Path` object for which to generate the SHA256 digest.
+
+    Keyword Args:
+        size: An `int` object representing the chuck size in bytes to use for iterating
+            over the checkpoint file.
+            Default: 1024 * 1024
+        verbose: A `bool` object specifying whether or not to print the result.
 
     Returns:
         A `str` object representing the SHA256 digest.
@@ -228,5 +234,8 @@ def get_sha256_digest(checkpoint_file: Path, size=1048576) -> str:
     with checkpoint_file.open("rb") as f:
         while data := f.read(size):
             h.update(data)
+    digest = h.hexdigest()
+    if verbose:
+        print(f"Generated SHA256 digest for checkpoint file '{checkpoint_file}': {digest}")
 
-    return h.hexdigest()
+    return digest

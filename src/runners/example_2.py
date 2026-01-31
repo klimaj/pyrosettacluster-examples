@@ -156,13 +156,11 @@ def get_system_info(gpu: bool) -> Dict[str, Any]:
         for i in range(_device_count):
             system_info[f"torch.cuda.get_device_name({i})"] = torch.cuda.get_device_name(i)
     # Cache Foundry checkpoint file checksums
-    system_info.setdefault("weights", {})
+    system_info.setdefault("checkpoints", {})
     ckpt_dir = (Path(os.getenv("HOME")) / ".foundry" / "checkpoints").resolve()
     ckpt_files = ckpt_dir.glob("*")
     for ckpt_file in ckpt_files:
-        system_info["weights"][ckpt_file.name] = get_sha256_digest(ckpt_file)
-
-    print(system_info)
+        system_info["checkpoints"][ckpt_file.name] = get_sha256_digest(ckpt_file, verbose=True)
 
     return system_info
 
