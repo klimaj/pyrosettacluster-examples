@@ -162,6 +162,8 @@ def get_system_info(gpu: bool) -> Dict[str, Any]:
     for ckpt_file in ckpt_files:
         system_info["weights"][ckpt_file.name] = get_sha256_digest(ckpt_file)
 
+    print(system_info)
+
     return system_info
 
 
