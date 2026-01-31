@@ -132,6 +132,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
         "out_directory": None,
         "write_structures": False,
         "write_fasta": False,
+        "device": "cuda" if os.getenv("CUDA_VISIBLE_DEVICES") else "cpu",
     }
     # Configure per-input inference
     structure_path = Path(kwargs["PyRosettaCluster_tmp_path"]) / "tmp.pdb"

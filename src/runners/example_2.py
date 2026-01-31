@@ -175,7 +175,7 @@ def main(
             output_path=output_path,
             project_name="pyrosettacluster-examples",
             simulation_name=f"example-2-gpu-{int(gpu)}",
-            simulation_records_in_scorefile=False,
+            simulation_records_in_scorefile=True,
             filter_results=True,
             output_init_file=None,
             compression=True,
