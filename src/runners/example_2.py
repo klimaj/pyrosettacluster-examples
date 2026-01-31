@@ -16,6 +16,40 @@ from src.protocols.foundry import proteinmpnn, rf3, rfd3
 from src.protocols.pyrosetta import cart_min, compute_rmsd, cst_cart_min_poly_gly
 
 
+class Resources:
+    """Manage compute resources for PyRosettaCluster example #2 simulation."""
+    _gpu_enabled_protocols: set[Callable[..., Any]] = {proteinmpnn, rf3, rfd3}
+    _cpu_resource: Dict[str, Union[float, int]] = {"CPU": 1}
+    _gpu_resource: Dict[str, Union[float, int]] = {"GPU": 1}
+
+    def __init__(self, *protocols: Callable[..., Any], gpu: bool = False) -> None:
+        for protocol in protocols:
+            if not callable(protocol):
+                raise ValueError(
+                    f"The protocol '{protocol!r}' is not a callable or generator object. Received: {type(protocol)}"
+                )
+        if not isinstance(gpu, bool):
+            raise ValueError(
+                f"The 'gpu' keyword argument parameter must be of type `bool`. Received: {type(gpu)}"
+            )
+        self.protocols: tuple[Callable[..., Any]] = protocols
+        self.gpu: bool = gpu
+
+    def get(self) -> list[Dict[str, Union[float, int]]]:
+        """
+        Get resources for the `PyRosettaCluster.distribute(resources=...)` keyword argument parameter.
+
+        Returns:
+            A `list` object of `dict` objects representing protocol-specific abstract resource constraints.
+        """
+        return [
+            Resources._gpu_resource.copy()
+            if self.gpu and protocol in Resources._gpu_enabled_protocols
+            else Resources._cpu_resource.copy()
+            for protocol in self.protocols
+        ]
+
+
 def initialize_pyrosetta() -> None:
     """
     Initialize PyRosetta on the client.
@@ -98,38 +132,26 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
         }
 
 
-class Resources:
-    """Manage compute resources for PyRosettaCluster example #2 simulation."""
-    _gpu_enabled_protocols: set[Callable[..., Any]] = {proteinmpnn, rf3, rfd3}
-    _cpu_resource: Dict[str, Union[float, int]] = {"CPU": 1}
-    _gpu_resource: Dict[str, Union[float, int]] = {"GPU": 1}
+def get_system_info(gpu: bool) -> Dict[str, Any]:
+    """
+    Get system information for the PyRosettaCluster simulation.
 
-    def __init__(self, *protocols: Callable[..., Any], gpu: bool = False) -> None:
-        for protocol in protocols:
-            if not callable(protocol):
-                raise ValueError(
-                    f"The protocol '{protocol!r}' is not a callable or generator object. Received: {type(protocol)}"
-                )
-        if not isinstance(gpu, bool):
-            raise ValueError(
-                f"The 'gpu' keyword argument parameter must be of type `bool`. Received: {type(gpu)}"
-            )
-        self.protocols: tuple[Callable[..., Any]] = protocols
-        self.gpu: bool = gpu
+    Args:
+        gpu: A required `bool` object specifying whether or not to use GPU resources.
 
-    def get(self) -> list[Dict[str, Union[float, int]]]:
-        """
-        Get resources for the `PyRosettaCluster.distribute(resources=...)` keyword argument parameter.
+    Returns:
+        A `dict` object representing the `PyRosettaCluster(system_info=...)` keyword argument parameter.
+    """
+    system_info = {"sys.platform": sys.platform}
+    _cuda_is_available = torch.cuda.is_available()
+    if gpu and _cuda_is_available:
+        system_info["torch.cuda.is_available()"] = _cuda_is_available
+        _device_count = torch.cuda.device_count()
+        system_info["torch.cuda.device_count()"] = _device_count
+        for i in range(_device_count):
+            system_info[f"torch.cuda.get_device_name({i})"] = torch.cuda.get_device_name(i)
 
-        Returns:
-            A `list` object of `dict` objects representing protocol-specific abstract resource constraints.
-        """
-        return [
-            Resources._gpu_resource.copy()
-            if self.gpu and protocol in Resources._gpu_enabled_protocols
-            else Resources._cpu_resource.copy()
-            for protocol in self.protocols
-        ]
+    return system_info
 
 
 def main(
@@ -153,16 +175,6 @@ def main(
     resources.update(Resources._cpu_resource)
     if gpu:
         resources.update(Resources._gpu_resource)
-
-    # System info accounting
-    system_info = {"sys.platform": sys.platform}
-    _cuda_is_available = torch.cuda.is_available()
-    if gpu and _cuda_is_available:
-        system_info["torch.cuda.is_available()"] = _cuda_is_available
-        _device_count = torch.cuda.device_count()
-        system_info["torch.cuda.device_count()"] = _device_count
-        for i in range(_device_count):
-            system_info[f"torch.cuda.get_device_name({i})"] = torch.cuda.get_device_name(i)
 
     # Run the simulation
     with LocalCluster(
@@ -191,7 +203,7 @@ def main(
             compressed=False,
             output_decoy_types=[".pdb", ".b64_pose"],
             output_scorefile_types=[".json", ".bz2"],
-            system_info=system_info,
+            system_info=get_system_info(gpu),
             author=__author__,
             license=(
                 f"Copyright (c) {__author__}. "
@@ -233,6 +245,12 @@ if __name__ == "__main__":
         dest="gpu",
         action="store_true",
         help="Run the PyRosettaCluster simulation with GPUs enabled.",
+    )
+    parser.add_argument(
+        "--no-gpu",
+        dest="gpu",
+        action="store_false",
+        help="Run the PyRosettaCluster simulation without GPUs enabled.",
     )
     parser.set_defaults(gpu=False)
     args = parser.parse_args()
