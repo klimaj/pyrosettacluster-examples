@@ -54,13 +54,17 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     # Print runtime info
     print_protocol_info(**kwargs)
     # Setup seed
-    seed_everything(pyrosetta_to_torch_seed(kwargs["PyRosettaCluster_seed"]))
+    torch_seed = pyrosetta_to_torch_seed(kwargs["PyRosettaCluster_seed"])
     # Configure RFD3
     config = RFD3InferenceConfig(
         specification={
             "length": kwargs["rfd3"]["length"],
         },
         diffusion_batch_size=kwargs["rfd3"]["diffusion_batch_size"],
+        num_nodes=1,
+        devices_per_node=1,
+        verbose=True,
+        seed=torch_seed,
     )
     # Initialize RFD3 inference engine
     model = RFD3InferenceEngine(**config)

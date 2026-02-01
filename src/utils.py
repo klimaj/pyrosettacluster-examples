@@ -251,7 +251,7 @@ def get_bb_rmsd(file1: str, file2: str, flags: Optional[str] = None) -> float:
 
     Args:
         file1: A `str` object representing the first structure file path.
-        file2: A `str` object representing the first structure file path.
+        file2: A `str` object representing the second structure file path.
 
     Keyword Args:
         flags: An optional `str` object representing PyRosetta initialization
