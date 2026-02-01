@@ -14,7 +14,7 @@ python = "3.12.*"
 
 [pypi-dependencies]
 matplotlib = "*"
-pyrosetta = "2026.*"
+pyrosetta = ">=2026.*"
 pyrosetta-distributed = ">=0.0.4"
 rc-foundry = { version = ">=0.1.9", extras = ["all"] }
 seaborn = "*"
