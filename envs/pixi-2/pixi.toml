@@ -1,20 +1,16 @@
 [workspace]
 authors = ["Jason C. Klima"]
-channels = [
-    "https://conda.rosettacommons.org",
-    "https://conda.graylab.jhu.edu",
-    "conda-forge",
-]
+channels = ["https://conda.rosettacommons.org", "conda-forge"]
 name = "pyrosettacluster-example-2"
 platforms = ["linux-64"]
 version = "1.0.0"
 
 [dependencies]
 python = "3.12.*"
+pyrosetta = { version = ">=2026.3", channel = "https://conda.rosettacommons.org" }
 
 [pypi-dependencies]
-matplotlib = ">=3.10.8"
-pyrosetta = { version = ">=2026.3", index = "https://west.rosettacommons.org/pyrosetta/quarterly/release.cxx11thread.serialization/" }
+matplotlib = "*"
 pyrosetta-distributed = ">=0.0.4"
 rc-foundry = { version = ">=0.1.9", extras = ["all"] }
-seaborn = ">=0.13.2"
+seaborn = "*"
