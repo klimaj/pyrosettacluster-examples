@@ -16,5 +16,5 @@ python = "3.12.*"
 seaborn = "*"
 
 [pypi-dependencies]
-rc-foundry[all] = ">=0.1.9"
+rc-foundry = { version = ">=0.1.9", extras = ["all"] }
 pyrosetta-distributed = ">=0.0.4"
