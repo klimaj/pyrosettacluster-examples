@@ -242,12 +242,12 @@ def get_sha256_digest(checkpoint_file: Path, size=1024 * 1024, verbose=False) ->
     return digest
 
 
-def get_bb_rmsd(file1: str, file2: str, flags: Optional[str] = None) -> float:
+def get_bb_rmsd_nosuper(file1: str, file2: str, flags: Optional[str] = None) -> float:
     """
-    Return the backbone heavy atom root-mean-squared deviation (RMSD)
-    between two input structure files. If PyRosetta is not yet initialized,
-    then PyRosetta will first be initialized with the optionally input
-    PyRosetta initialization flags (otherwise empty flags).
+    Return the backbone heavy atom root-mean-squared deviation (RMSD) without superposition
+    between two input structure files. If PyRosetta is not yet initialized, then PyRosetta
+    will first be initialized with the optionally input PyRosetta initialization flags, 
+    otherwise empty flags.
 
     Args:
         file1: A `str` object representing the first structure file path.
@@ -261,6 +261,11 @@ def get_bb_rmsd(file1: str, file2: str, flags: Optional[str] = None) -> float:
     Returns:
         A `float` object representing the backbone heavy atom RMSD.
     """
+    from pyrosetta.rosetta.core.scoring import (
+        rms_at_corresponding_atoms_no_super,
+        setup_matching_protein_backbone_heavy_atoms,
+    )
+
     for file in (file1, file2):
         if not isinstance(file, str) or not os.path.isfile(file):
             raise ValueError(f"The input file must be a `str` object and exist: '{file}'.")
@@ -272,8 +277,11 @@ def get_bb_rmsd(file1: str, file2: str, flags: Optional[str] = None) -> float:
     if not pyrosetta.rosetta.basic.was_init_called():
         extra_options = flags if flags else ""
         pyrosetta.init(options="", extra_options=extra_options, silent=True)
+
     pose1 = io.pose_from_file(file1).pose
     pose2 = io.pose_from_file(file2).pose
-    bb_rmsd = pyrosetta.rosetta.core.scoring.bb_rmsd_including_O(pose1, pose2)
+    atom_id_map = pyrosetta.rosetta.std.map_core_id_AtomID_core_id_AtomID()
+    setup_matching_protein_backbone_heavy_atoms(pose1=pose1, pose2=pose2, atom_id_map=atom_id_map)
+    bb_rmsd = rms_at_corresponding_atoms_no_super(mod_pose=pose1, ref_pose=pose2, atom_id_map=atom_id_map)
 
     return bb_rmsd
