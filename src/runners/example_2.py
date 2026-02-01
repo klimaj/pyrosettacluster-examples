@@ -113,7 +113,7 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
             "set_logging_handler": "logging",
             # RFdiffusion-3 parameters
             "rfd3": {
-                "length": "20-30",
+                "length": "25",
                 "diffusion_batch_size": 1, # 2,
                 "n_batches": 1,
             },
