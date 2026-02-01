@@ -14,10 +14,7 @@ python = "3.12.*"
 
 [pypi-dependencies]
 matplotlib = ">=3.10.8"
-pyrosetta = ">=2026.3"
+pyrosetta = { version = ">=2026.3", index = "https://west.rosettacommons.org/pyrosetta/quarterly/release.cxx11thread.serialization/" }
 pyrosetta-distributed = ">=0.0.4"
 rc-foundry = { version = ">=0.1.9", extras = ["all"] }
 seaborn = ">=0.13.2"
-
-[pypi-options]
-find-links = [{url = "https://west.rosettacommons.org/pyrosetta/quarterly/release.cxx11thread.serialization/"}]
