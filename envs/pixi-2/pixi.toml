@@ -10,11 +10,11 @@ platforms = ["linux-64"]
 version = "1.0.0"
 
 [dependencies]
-matplotlib = "*"
 pyrosetta = "2026.*"
-python = "3.12.*"
-seaborn = "*"
+python = "3.11.*"
 
 [pypi-dependencies]
-rc-foundry = { version = ">=0.1.9", extras = ["all"] }
+matplotlib = "*"
 pyrosetta-distributed = ">=0.0.4"
+rc-foundry = { version = ">=0.1.9", extras = ["all"] }
+seaborn = "*"
