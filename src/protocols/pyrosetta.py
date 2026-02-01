@@ -269,6 +269,4 @@ def compute_rmsd(
     pose.cache.pop(kwargs["mpnn_packed_pose_key"])
     packed_pose = io.to_packed(pose)
 
-
-
     return packed_pose

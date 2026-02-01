@@ -72,6 +72,23 @@ def download_checkpoints() -> None:
     )
 
 
+def get_cuda_visible_devices(gpu) -> str:
+    """
+    Return the 'CUDA_VISIBLE_DEVICES' environment variable value for the PyRosettaCluster simulation.
+
+    Args:
+        gpu: A required `bool` object specifying whether or not to use GPU resources.
+
+    Returns:
+        A `str` object representing the 'CUDA_VISIBLE_DEVICES' environment variable value.
+    """
+    return (
+        ",".join(map(str, range(torch.cuda.device_count())))
+        if gpu and torch.cuda.is_available()
+        else ""
+    )
+
+
 def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, None]:
     """
     Create tasks for a PyRosettaCluster simulation that uses a Dask `LocalCluster` instance.
@@ -92,7 +109,7 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
             f"The 'gpu' keyword argument parameter must be of type `bool`. Received: {type(gpu)}"
         )
 
-    cuda_visible_devices = ",".join(map(str, range(torch.cuda.device_count()))) if gpu and torch.cuda.is_available() else ""
+    cuda_visible_devices = get_cuda_visible_devices(gpu)
     for _ in range(num_tasks):
         yield {
             "options": {
