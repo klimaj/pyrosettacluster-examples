@@ -8,7 +8,7 @@
     <MOVERS>
         <MinMover name="min"
             scorefxn="beta_cart"
-            max_iter="500"
+            max_iter="2000"
             type="lbfgs_armijo_nonmonotone"
             tolerance="0.0001"
             movemap_factory="mmf"/>

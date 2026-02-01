@@ -259,11 +259,16 @@ def compute_rmsd(
     superimpose_mover.apply(src_pose)
     # Compute RMSD
     bb_rmsd = pyrosetta.rosetta.core.scoring.bb_rmsd_including_O(src_pose, ref_pose)
-    # Cache RMSD
-    packed_pose = packed_pose.update_scores(bb_rmsd=bb_rmsd)
+    # Cache RMSD & sequence
+    packed_pose = packed_pose.update_scores(
+        bb_rmsd=bb_rmsd,
+        sequence=packed_pose.pose.sequence(),
+    )
     # Clear reference `PackedPose` object from `Pose.cache`
     pose = packed_pose.pose
     pose.cache.pop(kwargs["mpnn_packed_pose_key"])
     packed_pose = io.to_packed(pose)
+
+
 
     return packed_pose

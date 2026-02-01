@@ -3,6 +3,7 @@ __author__ = "Jason C. Klima"
 
 import hashlib
 import json
+import os
 import pandas as pd
 import pyrosetta
 import pyrosetta.distributed.io as io
@@ -11,7 +12,7 @@ import time
 from functools import wraps
 from pathlib import Path
 from pyrosetta.distributed.packed_pose.core import PackedPose
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, Callable, Optional, TypeVar, cast
 
 
 T = TypeVar("T", bound=Callable[..., Any])
@@ -239,3 +240,40 @@ def get_sha256_digest(checkpoint_file: Path, size=1024 * 1024, verbose=False) ->
         print(f"Generated SHA256 digest for checkpoint file '{checkpoint_file}': {digest}")
 
     return digest
+
+
+def get_bb_rmsd(file1: str, file2: str, flags: Optional[str] = None) -> float:
+    """
+    Return the backbone heavy atom root-mean-squared deviation (RMSD)
+    between two input structure files. If PyRosetta is not yet initialized,
+    then PyRosetta will first be initialized with the optionally input
+    PyRosetta initialization flags (otherwise empty flags).
+
+    Args:
+        file1: A `str` object representing the first structure file path.
+        file2: A `str` object representing the first structure file path.
+
+    Keyword Args:
+        flags: An optional `str` object representing PyRosetta initialization
+            options to use if PyRosetta is not already initialized.
+            Default: ""
+
+    Returns:
+        A `float` object representing the backbone heavy atom RMSD.
+    """
+    for file in (file1, file2):
+        if not isinstance(file, str) or not os.path.isfile(file):
+            raise ValueError(f"The input file must be a `str` object and exist: '{file}'.")
+    if flags and not isinstance(flags, str):
+        raise ValueError(
+            "The 'flags' keyword argument parameter must be an instance of `str`. "
+            f"Received: {type(flags)}"
+        )
+    if not pyrosetta.rosetta.basic.was_init_called():
+        extra_options = flags if flags else ""
+        pyrosetta.init(options="", extra_options=extra_options, silent=True)
+    pose1 = io.pose_from_file(file1).pose
+    pose2 = io.pose_from_file(file2).pose
+    bb_rmsd = pyrosetta.rosetta.core.scoring.bb_rmsd_including_O(pose1, pose2)
+
+    return bb_rmsd

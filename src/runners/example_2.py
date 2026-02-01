@@ -119,7 +119,8 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
             },
             # ProteinMPNN parameters
             "proteinmpnn": {
-                "temperature": 0.1,
+                "temperature": 0.2,
+                "structure_noise": 0.1,
                 "batch_size": 1, # 2,
                 "number_of_batches": 1,
             },
