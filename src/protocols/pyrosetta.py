@@ -190,8 +190,12 @@ def cst_cart_min_poly_gly(
     print_protocol_info(**kwargs)
     # Run RosettaScripts
     xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "cst_cart_min_poly_gly.xml"
+    packed_pose = run_xml_file(packed_pose, xml_file)
+    packed_pose = packed_pose.update_scores(
+        protocol_number=kwargs["PyRosettaCluster_protocol_number"],
+    )
 
-    return run_xml_file(packed_pose, xml_file)
+    return packed_pose
 
 
 @timeit
@@ -217,8 +221,12 @@ def cart_min(
     print_protocol_info(**kwargs)
     # Run RosettaScripts
     xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "cart_min.xml"
+    packed_pose = run_xml_file(packed_pose, xml_file)
+    packed_pose = packed_pose.update_scores(
+        protocol_number=kwargs["PyRosettaCluster_protocol_number"],
+    )
 
-    return run_xml_file(packed_pose, xml_file)
+    return packed_pose
 
 
 @timeit
@@ -263,6 +271,7 @@ def compute_rmsd(
     packed_pose = packed_pose.update_scores(
         bb_rmsd=bb_rmsd,
         sequence=packed_pose.pose.sequence(),
+        protocol_number=kwargs["PyRosettaCluster_protocol_number"],
     )
     # Clear reference `PackedPose` object from `Pose.cache`
     pose = packed_pose.pose

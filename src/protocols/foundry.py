@@ -81,6 +81,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
             packed_pose = atom_array_to_packed_pose(rfd3_output.atom_array)
             packed_pose = packed_pose.update_scores(
                 rfd3_output_metadata=rfd3_output.metadata,
+                protocol_number=kwargs["PyRosettaCluster_protocol_number"],
             )
             packed_poses.append(packed_pose)
 
@@ -171,6 +172,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
             mpnn_input_dict=mpnn_output.input_dict,
             mpnn_output_dict=mpnn_output.output_dict,
             mpnn_pdbstring=mpnn_pdbstring,
+            protocol_number=kwargs["PyRosettaCluster_protocol_number"],
         )
         packed_poses.append(_packed_pose)
 
@@ -293,6 +295,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         rf3_seed=rf3_output.seed,
         rf3_mean_plddt_per_res=rf3_mean_plddt_per_res,
         rf3_plddt_per_atom=rf3_plddt_per_atom,
+        protocol_number=kwargs["PyRosettaCluster_protocol_number"],
     )
 
     return rf3_packed_pose
