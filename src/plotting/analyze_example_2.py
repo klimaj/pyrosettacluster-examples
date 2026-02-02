@@ -20,7 +20,7 @@ def main(original_scorefile: Path) -> None:
     )
     bb_rmsd = v["bb_rmsd"]
     total_score = v["total_score"]
-    output_file = v["output_file"].replace(".pdb", ".b64_pose")
+    output_file = Path(v["output_file"]).with_suffix(".b64_pose")
     print(f"Lowest scRMSD decoy (bb_rmsd={bb_rmsd}; total_score={total_score}):", output_file)
 
 
