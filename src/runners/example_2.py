@@ -110,7 +110,7 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
         )
 
     cuda_visible_devices = get_cuda_visible_devices(gpu)
-    for _ in range(num_tasks):
+    for i in range(num_tasks):
         yield {
             "options": {
                 "beta_jan25": "1",
@@ -150,6 +150,8 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
             # Protocol-specific parameters
             "cuda_visible_devices": cuda_visible_devices,
             "scorefxn_name": "beta_jan25",
+            # Metadata
+            "task_idx": i,
         }
 
 
