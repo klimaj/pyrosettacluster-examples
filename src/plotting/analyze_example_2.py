@@ -20,9 +20,11 @@ def main(original_scorefile: Path) -> None:
     )
     bb_rmsd = v["bb_rmsd"]
     total_score = v["total_score"]
+    protocol_number = v["protocol_number"]
+    decoy_ids = v["decoy_ids"]
+    seeds = v["seeds"]
     output_file = Path(v["output_file"]).with_suffix(".b64_pose")
-    print(v[["protocol_number", "decoy_ids", "bb_rmsd", "seeds"]])
-    print(f"Lowest scRMSD decoy (bb_rmsd={bb_rmsd}; total_score={total_score}):", output_file)
+    print(f"Lowest scRMSD decoy (bb_rmsd={bb_rmsd}; total_score={total_score}; protocol_number={protocol_number}; decoy_ids={decoy_ids}; seeds={seeds}):", output_file)
 
 
 if __name__ == "__main__":
