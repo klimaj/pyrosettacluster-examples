@@ -286,3 +286,21 @@ def get_bb_rmsd_nosuper(file1: str, file2: str, flags: Optional[str] = None) -> 
     bb_rmsd = rms_at_corresponding_atoms_no_super(mod_pose=pose1, ref_pose=pose2, atom_id_map=atom_id_map)
 
     return bb_rmsd
+
+
+def get_sequence_percent_identity(seq1: str, seq2: str) -> float:
+    """
+    Return the percent sequence identity between two sequences.
+
+    Args:
+        seq1: A `str` object representing the first sequence.
+        seq2: A `str` object representing the second sequence.
+
+    Returns:
+        A `float` object representing the percent sequence identity.
+    """
+    assert len(seq1) == len(seq2), f"Input sequences must be equal length: {len(seq1)} != {len(seq2)}"
+    identical = sum(res1 == res2 for res1, res2 in zip(seq1, seq2))
+    total = len(seq1)
+
+    return (identical / total) * 100
