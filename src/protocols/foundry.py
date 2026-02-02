@@ -4,7 +4,7 @@ __author__ = "Jason C. Klima"
 from pathlib import Path
 from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
-from typing import Any, List
+from typing import Any, Dict, List
 
 from src.utils import (
     atom_array_to_packed_pose,
@@ -23,11 +23,12 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
         packed_pose: A required `None` object.
 
     Keyword Args:
+        scorefxn_name: A required `str` object representing a score function name.
         cuda_visible_devices: A required key name for the 'CUDA_VISIBLE_DEVICES' environment variable parameter.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
-        A `PackedPose` object.
+        A list of `PackedPose` objects.
     """
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = kwargs["cuda_visible_devices"]
@@ -42,6 +43,8 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
         torch.backends.cudnn.benchmark = False
         torch.backends.cuda.matmul.allow_tf32 = False
         torch.backends.cudnn.allow_tf32 = False
+
+    import pyrosetta.distributed.io as io
 
     from contextlib import nullcontext
     from lightning.fabric import seed_everything
@@ -75,10 +78,12 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
             out_dir=None,
             n_batches=kwargs["rfd3"]["n_batches"],
         )
+    # Update scores
+    score_task = io.create_score_function(kwargs["scorefxn_name"])
     packed_poses = []
     for _example_id, rfd3_outputs in results.items():
         for rfd3_output in rfd3_outputs:
-            packed_pose = atom_array_to_packed_pose(rfd3_output.atom_array)
+            packed_pose = score_task(atom_array_to_packed_pose(rfd3_output.atom_array))
             packed_pose = packed_pose.update_scores(
                 rfd3_output_metadata=rfd3_output.metadata,
                 protocol_number=kwargs["PyRosettaCluster_protocol_number"],
@@ -90,7 +95,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
 
 @timeit
 @requires_packed_pose
-def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
+def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose, Dict[str, Any]]:
     """
     A PyRosetta protocol that runs ProteinMPNN.
 
@@ -98,12 +103,12 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
-        mpnn_packed_pose_key: A required key name for the ProteinMPNN `PackedPose` object.
+        scorefxn_name: A required `str` object representing a score function name.
         cuda_visible_devices: A required key name for the 'CUDA_VISIBLE_DEVICES' environment variable parameter.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
-        A list of `PackedPose` objects.
+        A list of `PackedPose` objects with a PyRosettaCluster keyward arguments dictionary.
     """
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = kwargs["cuda_visible_devices"]
@@ -119,7 +124,9 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
         torch.backends.cuda.matmul.allow_tf32 = False
         torch.backends.cudnn.allow_tf32 = False
 
+    import pyrosetta
     import pyrosetta.distributed.io as io
+    import toolz
 
     from contextlib import nullcontext
     from lightning.fabric import seed_everything
@@ -163,11 +170,14 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     model = MPNNInferenceEngine(**config)
     with torch.amp.autocast("cuda", enabled=False) if os.getenv("CUDA_VISIBLE_DEVICES") else nullcontext():
         results = model.run(input_dicts=input_dicts)
-    # Parse results
+    # Update scores
+    score_task = io.create_score_function(kwargs["scorefxn_name"])
+    _reserved = pyrosetta.Pose().cache._reserved
     packed_poses = []
     for mpnn_output in results:
-        _packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
+        _packed_pose = score_task(atom_array_to_packed_pose(mpnn_output.atom_array))
         _packed_pose = _packed_pose.update_scores(
+            toolz.keyfilter(lambda k: k not in _reserved, packed_pose.pose.cache),
             mpnn_input_dict=mpnn_output.input_dict,
             mpnn_output_dict=mpnn_output.output_dict,
             mpnn_pdbstring=mpnn_pdbstring,
@@ -190,6 +200,7 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
+        scorefxn_name: A required `str` object representing a score function name.
         cuda_visible_devices: A required key name for the 'CUDA_VISIBLE_DEVICES' environment variable parameter.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
@@ -270,7 +281,8 @@ def rf3(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
             cyclic_chains=[],
         )
     rf3_output = results[example_id][0] # Top ranked prediction
-    rf3_packed_pose = atom_array_to_packed_pose(rf3_output.atom_array)
+    score_task = io.create_score_function(kwargs["scorefxn_name"])
+    rf3_packed_pose = score_task(atom_array_to_packed_pose(rf3_output.atom_array))
     # Compute mean heavy-atom pLDDT per residue
     rf3_mean_plddt_per_res = [
         float(np.mean(res_atoms[res_atoms.element != "H"].get_annotation("b_factor")))

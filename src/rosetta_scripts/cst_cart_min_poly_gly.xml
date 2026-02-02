@@ -17,7 +17,7 @@
         <VirtualRoot name="rm_virtual_root" removable="1" remove="1"/>
         <AddConstraints name="add_csts">
             <CoordinateConstraintGenerator name="coord_cst"
-                sd="0.1"
+                sd="0.25"
                 bounded="0"
                 bounded_width="0.0"
                 sidechain="0"
@@ -29,7 +29,7 @@
         <RemoveConstraints name="rm_csts" constraint_generators="coord_cst"/>
         <MinMover name="min"
             scorefxn="beta_cart"
-            max_iter="200"
+            max_iter="500"
             type="lbfgs_armijo_nonmonotone"
             tolerance="0.01"
             movemap_factory="mmf"/>

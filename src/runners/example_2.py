@@ -130,25 +130,26 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
             "set_logging_handler": "logging",
             # RFdiffusion-3 parameters
             "rfd3": {
-                "length": "25",
-                "diffusion_batch_size": 1, # 2,
+                "length": "30",
+                "diffusion_batch_size": 2,
                 "n_batches": 1,
             },
             # ProteinMPNN parameters
             "proteinmpnn": {
-                "temperature": 0.2,
-                "structure_noise": 0.2,
-                "batch_size": 1, # 2,
+                "temperature": 0.1,
+                "structure_noise": 0.0,
+                "batch_size": 2,
                 "number_of_batches": 1,
             },
             # RoseTTAFold-3 parameters
             "rf3": {
-                "diffusion_batch_size": 1, # 2,
+                "diffusion_batch_size": 2,
                 "n_recycles": 5,
                 "num_steps": 50,
             },
             # Protocol-specific parameters
-            "cuda_visible_devices": cuda_visible_devices, 
+            "cuda_visible_devices": cuda_visible_devices,
+            "scorefxn_name": "beta_jan25",
         }
 
 

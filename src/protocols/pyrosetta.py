@@ -150,7 +150,7 @@ def run_xml_file(packed_pose: PackedPose, xml_file: Path) -> PackedPose:
 
     Args:
         packed_pose: A required input `PackedPose` object.
-        xml_file: A required RosettaScripts XML file path or `Path` object.
+        xml_file: A required RosettaScripts XML file path as a `str` or `Path` object.
 
     Returns:
         A `PackedPose` object.
@@ -168,9 +168,7 @@ def run_xml_file(packed_pose: PackedPose, xml_file: Path) -> PackedPose:
 
 @timeit
 @requires_packed_pose
-def cst_cart_min_poly_gly(
-    packed_pose: PackedPose, **kwargs: Any
-) -> PackedPose:
+def cst_cart_min_poly_gly(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     """
     A PyRosetta protocol that converts the input `PackedPose` object to poly-glycine,
     and minimizes with C-alpha coordinate constraints.
@@ -179,11 +177,14 @@ def cst_cart_min_poly_gly(
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
+        scorefxn_name: A required `str` object representing a score function name.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
         A `PackedPose` object.
     """
+    import pyrosetta.distributed.io as io
+
     from pathlib import Path
 
     # Print runtime info
@@ -194,15 +195,14 @@ def cst_cart_min_poly_gly(
     packed_pose = packed_pose.update_scores(
         protocol_number=kwargs["PyRosettaCluster_protocol_number"],
     )
+    score_task = io.create_score_function(kwargs["scorefxn_name"])
 
-    return packed_pose
+    return score_task(packed_pose)
 
 
 @timeit
 @requires_packed_pose
-def cart_min(
-    packed_pose: PackedPose, **kwargs: Any
-) -> PackedPose:
+def cart_min(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     """
     A PyRosetta protocol that performs Cartesian minimization on the input `PackedPose` object.
 
@@ -210,11 +210,14 @@ def cart_min(
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
+        scorefxn_name: A required `str` object representing a score function name.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
         A `PackedPose` object.
     """
+    import pyrosetta.distributed.io as io
+
     from pathlib import Path
 
     # Print runtime info
@@ -225,15 +228,14 @@ def cart_min(
     packed_pose = packed_pose.update_scores(
         protocol_number=kwargs["PyRosettaCluster_protocol_number"],
     )
+    score_task = io.create_score_function(kwargs["scorefxn_name"])
 
-    return packed_pose
+    return score_task(packed_pose)
 
 
 @timeit
 @requires_packed_pose
-def compute_rmsd(
-    packed_pose: PackedPose, **kwargs: Any
-) -> PackedPose:
+def compute_rmsd(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     """
     A PyRosetta protocol that performs C-alpha superposition and computes the backbone
     heavy atom root-mean-squared deviation (RMSD) between the input `PackedPose` and a
@@ -243,6 +245,7 @@ def compute_rmsd(
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
+        scorefxn_name: A required `str` object representing a score function name.
         mpnn_packed_pose: A required `PackedPose` object representing a reference structure.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
@@ -250,6 +253,7 @@ def compute_rmsd(
         A `PackedPose` object.
     """
     import pyrosetta
+    import pyrosetta.distributed.io as io
 
     # Print runtime info
     print_protocol_info(**kwargs)
@@ -264,11 +268,12 @@ def compute_rmsd(
     superimpose_mover.apply(src_pose)
     # Compute RMSD
     bb_rmsd = pyrosetta.rosetta.core.scoring.bb_rmsd_including_O(src_pose, ref_pose)
-    # Cache RMSD & sequence
+    # Update scores
     packed_pose = packed_pose.update_scores(
         bb_rmsd=bb_rmsd,
         sequence=packed_pose.pose.sequence(),
         protocol_number=kwargs["PyRosettaCluster_protocol_number"],
     )
+    score_task = io.create_score_function(kwargs["scorefxn_name"])
 
-    return packed_pose
+    return score_task(packed_pose)
