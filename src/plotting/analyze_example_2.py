@@ -21,6 +21,7 @@ def main(original_scorefile: Path) -> None:
     bb_rmsd = v["bb_rmsd"]
     total_score = v["total_score"]
     output_file = Path(v["output_file"]).with_suffix(".b64_pose")
+    print(df[["protocol_number", "decoy_ids", "bb_rmsd", "seeds"]])
     print(f"Lowest scRMSD decoy (bb_rmsd={bb_rmsd}; total_score={total_score}):", output_file)
 
 

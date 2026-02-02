@@ -139,7 +139,8 @@ def get_dataframe_from_pickle(scorefile: Path) -> pd.DataFrame:
     )
     if set(df.columns) == {"output_file", "scores", "metadata", "instance"}:
         scores_df = df["scores"].apply(pd.Series)
-        df = pd.concat([df[["output_file"]], scores_df], axis=1)
+        instance_df = df["instance"].apply(pd.Series)
+        df = pd.concat([df[["output_file"]], instance_df[["decoy_ids", "seeds"]], scores_df], axis=1)
 
     return df
 
