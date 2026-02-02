@@ -4,7 +4,7 @@ __author__ = "Jason C. Klima"
 from pathlib import Path
 from pyrosetta.distributed.cluster import requires_packed_pose
 from pyrosetta.distributed.packed_pose.core import PackedPose
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from src.utils import (
     atom_array_to_packed_pose,
@@ -95,7 +95,7 @@ def rfd3(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
 
 @timeit
 @requires_packed_pose
-def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose, Dict[str, Any]]:
+def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[Union[PackedPose, Dict[str, Any]]]:
     """
     A PyRosetta protocol that runs ProteinMPNN.
 
