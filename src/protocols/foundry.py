@@ -168,15 +168,16 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose]:
     for mpnn_output in results:
         _packed_pose = atom_array_to_packed_pose(mpnn_output.atom_array)
         _packed_pose = _packed_pose.update_scores(
-            {kwargs["mpnn_packed_pose_key"]: packed_pose.clone()},
             mpnn_input_dict=mpnn_output.input_dict,
             mpnn_output_dict=mpnn_output.output_dict,
             mpnn_pdbstring=mpnn_pdbstring,
             protocol_number=kwargs["PyRosettaCluster_protocol_number"],
         )
         packed_poses.append(_packed_pose)
+    # Cache ProteinMPNN input structure
+    kwargs["mpnn_packed_pose"] = packed_pose.clone()
 
-    return packed_poses
+    return packed_poses + [kwargs]
 
 
 @timeit

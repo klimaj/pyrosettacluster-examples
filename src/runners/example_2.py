@@ -148,7 +148,6 @@ def create_tasks(num_tasks: int, gpu: bool) -> Generator[Dict[str, Any], None, N
                 "num_steps": 50,
             },
             # Protocol-specific parameters
-            "mpnn_packed_pose_key": "mpnn_packed_pose",
             "cuda_visible_devices": cuda_visible_devices, 
         }
 

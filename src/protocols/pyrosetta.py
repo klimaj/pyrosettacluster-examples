@@ -237,28 +237,25 @@ def compute_rmsd(
     """
     A PyRosetta protocol that performs C-alpha superposition and computes the backbone
     heavy atom root-mean-squared deviation (RMSD) between the input `PackedPose` and a
-    reference `PackedPose` object given by the 'mpnn_packed_pose_key' keyword argument
-    parameter in the input `PackedPose.pose.cache` dictionary, which is cleared from
-    the `PackedPose.pose.cache` dictionary at the end of the protocol.
+    reference `PackedPose` object.
 
     Args:
         packed_pose: A required input `PackedPose` object.
 
     Keyword Args:
-        mpnn_packed_pose_key: A required key name for the ProteinMPNN `PackedPose` object.
+        mpnn_packed_pose: A required `PackedPose` object representing a reference structure.
         PyRosettaCluster_*: Default `PyRosettaCluster` keyword arguments.
 
     Returns:
         A `PackedPose` object.
     """
     import pyrosetta
-    import pyrosetta.distributed.io as io
 
     # Print runtime info
     print_protocol_info(**kwargs)
     # Setup protocol
     src_pose = packed_pose.pose
-    ref_pose = packed_pose.pose.cache[kwargs["mpnn_packed_pose_key"]].pose
+    ref_pose = kwargs["mpnn_packed_pose"].pose
     # Superimpose input onto reference
     superimpose_mover = pyrosetta.rosetta.protocols.simple_moves.SuperimposeMover()
     superimpose_mover.set_ca_only(True)
@@ -273,9 +270,5 @@ def compute_rmsd(
         sequence=packed_pose.pose.sequence(),
         protocol_number=kwargs["PyRosettaCluster_protocol_number"],
     )
-    # Clear reference `PackedPose` object from `Pose.cache`
-    pose = packed_pose.pose
-    pose.cache.pop(kwargs["mpnn_packed_pose_key"])
-    packed_pose = io.to_packed(pose)
 
     return packed_pose
