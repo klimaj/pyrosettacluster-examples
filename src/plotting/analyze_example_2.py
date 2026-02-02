@@ -10,8 +10,10 @@ from src.utils import get_dataframe_from_pickle
 
 def main(original_scorefile: Path) -> None:
     """Print info about the lowest scRMSD decoy."""
+    df = get_dataframe_from_pickle(original_scorefile)
     v = (
-        get_dataframe_from_pickle(original_scorefile)
+        df
+        .loc[df["protocol_number"].eq(5)]
         .sort_values("bb_rmsd", ascending=True)
         .reset_index(drop=True)
         .iloc[0] # Top ranked design
