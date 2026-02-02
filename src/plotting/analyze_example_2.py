@@ -9,7 +9,7 @@ from src.utils import get_dataframe_from_pickle
 
 
 def main(original_scorefile: Path) -> None:
-    """Print info about the lowest RMSD decoy."""
+    """Print info about the lowest scRMSD decoy."""
     v = (
         get_dataframe_from_pickle(original_scorefile)
         .sort_values("bb_rmsd", ascending=True)
@@ -18,8 +18,8 @@ def main(original_scorefile: Path) -> None:
     )
     bb_rmsd = v["bb_rmsd"]
     total_score = v["total_score"]
-    output_file = v["output_file"]
-    print(f"Lowest RMSD decoy (bb_rmsd={bb_rmsd}; total_score={total_score}):", output_file)
+    output_file = v["output_file"].replace(".pdb", ".b64_pose")
+    print(f"Lowest scRMSD decoy (bb_rmsd={bb_rmsd}; total_score={total_score}):", output_file)
 
 
 if __name__ == "__main__":

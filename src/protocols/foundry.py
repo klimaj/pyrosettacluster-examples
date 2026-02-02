@@ -150,7 +150,7 @@ def proteinmpnn(packed_pose: PackedPose, **kwargs: Any) -> List[PackedPose, Dict
     structure_path = Path(kwargs["PyRosettaCluster_tmp_path"]) / "tmp.pdb"
     pose = packed_pose.pose
     pose.cache.clear() # Clear scores from saved
-    mpnn_pdbstring = io.to_pdbstring(packed_pose)
+    mpnn_pdbstring = io.to_pdbstring(pose)
     structure_path.write_text(mpnn_pdbstring)
     input_dicts = [
         {
