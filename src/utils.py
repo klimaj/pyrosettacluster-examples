@@ -247,7 +247,7 @@ def get_bb_rmsd_nosuper(file1: str, file2: str, flags: Optional[str] = None) -> 
     Return the backbone heavy atom root-mean-squared deviation (RMSD) without superposition
     between two input structure files. If PyRosetta is not yet initialized, then PyRosetta
     will first be initialized with the optionally input PyRosetta initialization flags, 
-    otherwise empty flags.
+    otherwise "-mute all" flags are used.
 
     Args:
         file1: A `str` object representing the first structure file path.
@@ -275,7 +275,7 @@ def get_bb_rmsd_nosuper(file1: str, file2: str, flags: Optional[str] = None) -> 
             f"Received: {type(flags)}"
         )
     if not pyrosetta.rosetta.basic.was_init_called():
-        extra_options = flags if flags else ""
+        extra_options = flags if flags else "-mute all"
         pyrosetta.init(options="", extra_options=extra_options, silent=True)
 
     pose1 = io.pose_from_file(file1).pose
