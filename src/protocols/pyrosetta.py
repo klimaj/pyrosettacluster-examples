@@ -237,9 +237,9 @@ def cart_min(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
 @requires_packed_pose
 def compute_rmsd(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     """
-    A PyRosetta protocol that performs C-alpha superposition and computes the backbone
-    heavy atom root-mean-squared deviation (RMSD) between the input `PackedPose` and a
-    reference `PackedPose` object.
+    A PyRosetta protocol that performs backbone heavy atom superposition and computes
+    the backbone heavy atom root-mean-squared deviation (RMSD) between the input `PackedPose`
+    and a reference `PackedPose` object.
 
     Args:
         packed_pose: A required input `PackedPose` object.
@@ -252,22 +252,23 @@ def compute_rmsd(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     Returns:
         A `PackedPose` object.
     """
-    import pyrosetta
     import pyrosetta.distributed.io as io
+
+    from pyrosetta.rosetta.core.scoring import (
+        rms_at_corresponding_atoms,
+        setup_matching_protein_backbone_heavy_atoms,
+    )
+    from pyrosetta.rosetta.std import map_core_id_AtomID_core_id_AtomID
 
     # Print runtime info
     print_protocol_info(**kwargs)
     # Setup protocol
     src_pose = packed_pose.pose
     ref_pose = kwargs["mpnn_packed_pose"].pose
-    # Superimpose input onto reference
-    superimpose_mover = pyrosetta.rosetta.protocols.simple_moves.SuperimposeMover()
-    superimpose_mover.set_ca_only(True)
-    superimpose_mover.set_reference_pose(ref_pose)
-    superimpose_mover.set_target_range(start=1, end=ref_pose.size())
-    superimpose_mover.apply(src_pose)
-    # Compute RMSD
-    bb_rmsd = pyrosetta.rosetta.core.scoring.bb_rmsd_including_O(src_pose, ref_pose)
+    # Superimpose input onto reference and compute RMSD
+    atom_id_map = map_core_id_AtomID_core_id_AtomID()
+    setup_matching_protein_backbone_heavy_atoms(pose1=src_pose, pose2=ref_pose, atom_id_map=atom_id_map)
+    bb_rmsd = rms_at_corresponding_atoms(mod_pose=src_pose, ref_pose=ref_pose, atom_id_map=atom_id_map)
     # Update scores
     packed_pose = packed_pose.update_scores(
         bb_rmsd=bb_rmsd,

@@ -266,6 +266,7 @@ def get_bb_rmsd_nosuper(file1: str, file2: str, flags: Optional[str] = None) -> 
         rms_at_corresponding_atoms_no_super,
         setup_matching_protein_backbone_heavy_atoms,
     )
+    from pyrosetta.rosetta.std import map_core_id_AtomID_core_id_AtomID
 
     for file in (file1, file2):
         if not isinstance(file, str) or not os.path.isfile(file):
@@ -281,7 +282,7 @@ def get_bb_rmsd_nosuper(file1: str, file2: str, flags: Optional[str] = None) -> 
 
     pose1 = io.pose_from_file(file1).pose
     pose2 = io.pose_from_file(file2).pose
-    atom_id_map = pyrosetta.rosetta.std.map_core_id_AtomID_core_id_AtomID()
+    atom_id_map = map_core_id_AtomID_core_id_AtomID()
     setup_matching_protein_backbone_heavy_atoms(pose1=pose1, pose2=pose2, atom_id_map=atom_id_map)
     bb_rmsd = rms_at_corresponding_atoms_no_super(mod_pose=pose1, ref_pose=pose2, atom_id_map=atom_id_map)
 
