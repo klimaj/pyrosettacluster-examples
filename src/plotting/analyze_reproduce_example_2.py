@@ -16,9 +16,9 @@ from src.utils import (
 
 
 def expand_decoy_ids(df: pd.DataFrame, column="decoy_ids", prefix="decoy_id_protocol_number") -> pd.DataFrame:
-    df_decoy_id = pd.DataFrame(df[column].tolist(), index=df.index).add_prefix(f"{prefix}_")
+    df_decoy_id = pd.DataFrame(df[column].tolist(), index=df.index).add_prefix(f"{prefix}_").astype("Int64")
 
-    return df.drop(columns=[column]).join(df_decoy_id)
+    return df.join(df_decoy_id)
 
 
 def get_decoy_ids(df: pd.DataFrame, protocol_number: int) -> List[int]:
@@ -40,25 +40,32 @@ def main(original_scorefile: Path, reproduce_scorefile: Path, protocol_number: i
     """Save info about the lowest scRMSD decoy."""
     df1 = expand_decoy_ids(get_dataframe_from_pickle(original_scorefile))
     df2 = expand_decoy_ids(get_dataframe_from_pickle(reproduce_scorefile))
-    decoy_ids_1 = get_decoy_ids(df1)
-    decoy_ids_2 = get_decoy_ids(df2)
+    decoy_ids_1 = get_decoy_ids(df1, protocol_number)
+    decoy_ids_2 = get_decoy_ids(df2, protocol_number)
     assert decoy_ids_1 == decoy_ids_2, f"Decoy IDs are not identical: {decoy_ids_1} != {decoy_ids_2}"
 
     protocol_number_data = {}
     for protocol_number, decoy_id in enumerate(decoy_ids_1):
+        target_decoy_ids = decoy_ids_1[: (protocol_number + 1)]
         v1 = (
             df1
-            .loc[df1[f"decoy_id_protocol_number_{protocol_number}"].eq(decoy_id)]
+            .loc[
+                (df1[f"decoy_id_protocol_number_{protocol_number}"].eq(decoy_id))
+                & (df1["decoy_ids"].apply(lambda x: x == target_decoy_ids))
+            ]
             .pipe(assert_one_row) # Fail if >1 task was run
             .iloc[0]
         )
         v2 = (
             df2
-            .loc[df2[f"decoy_id_protocol_number_{protocol_number}"].eq(decoy_id)]
+            .loc[
+                (df2[f"decoy_id_protocol_number_{protocol_number}"].eq(decoy_id))
+                & (df2["decoy_ids"].apply(lambda x: x == target_decoy_ids))
+            ]
             .pipe(assert_one_row) # Fail if >1 task was run
             .iloc[0]
         )
-        # Compute scRMSD
+        # Compute backbone heavy atom RMSD
         original_decoy = Path(v1["output_file"]).with_suffix(".b64_pose")
         reproduce_decoy = Path(v2["output_file"]).with_suffix(".b64_pose")
         bb_rmsd = get_bb_rmsd_nosuper(str(original_decoy), str(reproduce_decoy))
@@ -69,10 +76,10 @@ def main(original_scorefile: Path, reproduce_scorefile: Path, protocol_number: i
         # Compute delta total_score
         original_total_score = v1["total_score"]
         reproduce_total_score = v2["total_score"]
-        delta_total_score = reproduce_total_score - original_total_score
+        delta_total_score = float(reproduce_total_score - original_total_score)
         # Cache scores
         protocol_number_data[protocol_number] = {
-            "scRMSD": bb_rmsd,
+            "bb_rmsd": bb_rmsd,
             "sequence_percent_identity": sequence_percent_identity,
             "delta_total_score": delta_total_score,
         }
