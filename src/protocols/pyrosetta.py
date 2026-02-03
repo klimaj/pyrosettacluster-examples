@@ -193,6 +193,7 @@ def cst_cart_min_poly_gly(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "cst_cart_min_poly_gly.xml"
     packed_pose = run_xml_file(packed_pose, xml_file)
     packed_pose = packed_pose.update_scores(
+        sequence=packed_pose.pose.sequence(),
         protocol_number=kwargs["PyRosettaCluster_protocol_number"],
     )
     score_task = io.create_score_function(kwargs["scorefxn_name"])
@@ -226,6 +227,7 @@ def cart_min(packed_pose: PackedPose, **kwargs: Any) -> PackedPose:
     xml_file = Path(__file__).parent.parent / "rosetta_scripts" / "cart_min.xml"
     packed_pose = run_xml_file(packed_pose, xml_file)
     packed_pose = packed_pose.update_scores(
+        sequence=packed_pose.pose.sequence(),
         protocol_number=kwargs["PyRosettaCluster_protocol_number"],
     )
     score_task = io.create_score_function(kwargs["scorefxn_name"])
