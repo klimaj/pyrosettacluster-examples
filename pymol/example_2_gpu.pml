@@ -25,7 +25,7 @@ load_decoy(
 
 # Load reproduced structure
 load_decoy(
-    "./results/example_2/gpu/reproduce/example-2-gpu-1_8e4bed62169c4909a2166a25621741ec.pdb",
+    "./results/example_2/gpu/reproduce/example-2-gpu-1_06521badd4f2475b9835723a9cd63373.pdb",
     "fold2"
 )
 python end
@@ -65,9 +65,7 @@ set_view (\
    65.428100586,  103.141494751,  -20.000000000 )
 
 # # Ray trace
-ray 4400,4400
+ray 5800,4400
 
 # Save
 png ./figures/example_2_gpu.png, dpi=600
-
-
