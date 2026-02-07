@@ -1,5 +1,7 @@
 results/
-pymol/
+tools/
+figures/
+src/plotting/example_2.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
