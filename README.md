@@ -11,6 +11,7 @@ Run the original simulation, then reproduce an output decoy from it, for any exa
 ## Results
 
 ### Example #1:
+##### Pixi version `0.63.2` was used to create the environment for the original simulation and to recreate the environment for the reproduction simulation.
 #### CPU-only simulations:
 - Original:
   - [`./results/example_1/original/example-1_ee4e3f706805477b9fd81c8ff3516949.pdb`](results/example_1/original/example-1_ee4e3f706805477b9fd81c8ff3516949.pdb): Original lowest energy output decoy.
@@ -19,7 +20,7 @@ Run the original simulation, then reproduce an output decoy from it, for any exa
   - [`./results/example_1/reproduce/example-1-reproduce_2ccbfc4774024e0bb1e3aebe6bd9fd63.pdb`](results/example_1/reproduce/example-1-reproduce_2ccbfc4774024e0bb1e3aebe6bd9fd63.pdb): Reproduced lowest energy output decoy.
 
 ### Example #2:
-
+##### Pixi version `0.63.2` was used to create the environments for the original simulations and to recreate the environments for the reproduction simulations.
 #### CPU-only simulations:
 - Original:
   - [`./results/example_2/cpu/original/example-2-gpu-0_d906fd986bc14c029cff3e39159e1850.pdb`](results/example_2/cpu/original/example-2-gpu-0_d906fd986bc14c029cff3e39159e1850.pdb): Original lowest scRMSD output decoy.
