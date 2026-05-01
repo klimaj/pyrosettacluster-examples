@@ -1,0 +1,16 @@
+authors:
+  - family-names: Klima
+    given-names: Jason C.
+cff-version: 1.2.0
+date-released: "2026-05-01"
+doi: 10.5281/zenodo.19828564
+license: MIT & CC BY-NC-ND 4.0 (dual-licensed)
+references:
+  - type: article
+    authors:
+      - family-names: Klima
+        given-names: Jason C.
+    title: "PyRosettaCluster: a Python framework for scalable and reproducible bio-macromolecular modeling and design"
+    doi: 10.26434/chemrxiv.15002628/v1
+    date-released: "2026-05-01"
+title: "PyRosettaCluster: a Python framework for scalable and reproducible bio-macromolecular modeling and design: Supplementary materials"
