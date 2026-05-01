@@ -50,16 +50,15 @@ Copyright © 2026 Jason C. Klima. This work is dual-licensed under the following
   - Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0) license for Protein Data Bank (PDB) files.
 
 ## Citation
+
 If you use this material, please cite the Zenodo software archive:
+
 ```
 @software{klima_2026_19828564,
   author       = {Klima, Jason C.},
-  title        = {PyRosettaCluster: a Python framework for scalable
-                   and reproducible bio-macromolecular modeling and
-                   design: Supplementary materials
-                  },
-  month        = may,
-  year         = 2026,
+  title        = {PyRosettaCluster: a Python framework for scalable and reproducible bio-macromolecular modeling and design: Supplementary materials},
+  month        = {may},
+  year         = {2026},
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.19828564},
   url          = {https://doi.org/10.5281/zenodo.19828564},
@@ -69,17 +68,17 @@ If you use this material, please cite the Zenodo software archive:
 If you reference the associated preprint publication, please cite the ChemRxiv article:
 
 ```
-@article{
-doi:10.26434/chemrxiv.15002628/v1,
-author = {Jason C. Klima},
-title = {PyRosettaCluster: a Python framework for scalable and reproducible bio-macromolecular modeling and design},
-journal = {ChemRxiv},
-volume = {2026},
-number = {0501},
-pages = {},
-year = {2026},
-doi = {10.26434/chemrxiv.15002628/v1},
-URL = {https://chemrxiv.org/doi/abs/10.26434/chemrxiv.15002628/v1},
-eprint = {https://chemrxiv.org/doi/pdf/10.26434/chemrxiv.15002628/v1},
-abstract = {The Rosetta software suite offers a set of powerful tools for bio-macromolecular modeling and design capable of high-resolution protein structure refinement and generation of de novo designed proteins with sub-angstrom atomic accuracy. Leveraging these tools at scale requires both immense computational resources and domain expertise, without which may lead to results that are not scientifically reproducible by independent investigators, in part due to challenges in communicating all of the necessary runtime configurations and system requirements. To address these reproducibility challenges for large-scale  simulation, we developed PyRosettaCluster, a versatile Python-based framework integrated into PyRosetta software to automatically capture the simulation data required to accurately reproduce a decoy and directly encode it into every output decoy file. PyRosettaCluster abstracts away complicated task execution orchestration details for distributed  workflows, effectively parallelizing modular, user-defined PyRosetta protocols parameterized by user-defined tasks using the lightweight Dask library. PyRosettaCluster supports integration of emerging third-party software applications into PyRosetta protocols, enabling inference of modern graphics processing unit (GPU)-accelerated artificial intelligence (AI) models for bio-macromolecular modeling and design tasks, provided they preserve deterministic runtime behavior for reproducibility purposes. Integration with the Dask-Jobqueue library enables job scheduling on high-performance computing (HPC) or elastic cloud compute infrastructure with arbitrary compute resources. Overall, this multipurpose tool provides a basis for scalable and reproducible bio-macromolecular modeling and design workflows in PyRosetta software. PyRosettaCluster was merged into the Rosetta software suite codebase in September 2020, and its source code has been publicly accessible since March 2024.}}
+@article{klima_2026_15002628,
+  author       = {Klima, Jason C.},
+  title        = {PyRosettaCluster: a Python framework for scalable and reproducible bio-macromolecular modeling and design},
+  journal      = {ChemRxiv},
+  volume       = {2026},
+  number       = {0501},
+  pages        = {},
+  year         = {2026},
+  doi          = {10.26434/chemrxiv.15002628/v1},
+  url          = {https://chemrxiv.org/doi/abs/10.26434/chemrxiv.15002628/v1},
+  eprint       = {https://chemrxiv.org/doi/pdf/10.26434/chemrxiv.15002628/v1},
+  abstract     = {The Rosetta software suite offers a set of powerful tools for bio-macromolecular modeling and design capable of high-resolution protein structure refinement and generation of de novo designed proteins with sub-angstrom atomic accuracy. Leveraging these tools at scale requires both immense computational resources and domain expertise, without which may lead to results that are not scientifically reproducible by independent investigators, in part due to challenges in communicating all of the necessary runtime configurations and system requirements. To address these reproducibility challenges for large-scale  simulation, we developed PyRosettaCluster, a versatile Python-based framework integrated into PyRosetta software to automatically capture the simulation data required to accurately reproduce a decoy and directly encode it into every output decoy file. PyRosettaCluster abstracts away complicated task execution orchestration details for distributed  workflows, effectively parallelizing modular, user-defined PyRosetta protocols parameterized by user-defined tasks using the lightweight Dask library. PyRosettaCluster supports integration of emerging third-party software applications into PyRosetta protocols, enabling inference of modern graphics processing unit (GPU)-accelerated artificial intelligence (AI) models for bio-macromolecular modeling and design tasks, provided they preserve deterministic runtime behavior for reproducibility purposes. Integration with the Dask-Jobqueue library enables job scheduling on high-performance computing (HPC) or elastic cloud compute infrastructure with arbitrary compute resources. Overall, this multipurpose tool provides a basis for scalable and reproducible bio-macromolecular modeling and design workflows in PyRosetta software. PyRosettaCluster was merged into the Rosetta software suite codebase in September 2020, and its source code has been publicly accessible since March 2024.},
+}
 ```
