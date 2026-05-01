@@ -2,7 +2,7 @@
 
 # _PyRosettaCluster_ Usage Examples
 
-Python code, _RosettaScripts_ scripts, PyMOL scripts, runtime environment configurations, and output data for "Example #1" and "Example #2" in the preprint publication:
+Python code, Jupyter notebooks, _RosettaScripts_ scripts, PyMOL scripts, runtime environment configurations, and output data for "Example #1" and "Example #2" in the preprint publication:
 
 **Jason C. Klima. PyRosettaCluster: a Python framework for scalable and reproducible bio-macromolecular modeling and design. ChemRxiv. 01 May 2026.
 DOI: https://doi.org/10.26434/chemrxiv.15002628/v1**
@@ -46,7 +46,7 @@ Run the original simulation, then reproduce an output decoy from it, for any exa
 
 ## License
 Copyright © 2026 Jason C. Klima. This work is dual-licensed under the following:
-  - MIT license for Python code (including Jupyter notebooks), _RosettaScripts_ scripts, PyMOL scripts, runtime environment configurations, and JavaScript Object Notation (JSON) files.
+  - MIT license for Python code, Jupyter notebooks, _RosettaScripts_ scripts, PyMOL scripts, runtime environment configurations, and JavaScript Object Notation (JSON) files.
   - Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0) license for Protein Data Bank (PDB) files.
 
 ## Citation
